@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Providers\RouteServiceProvider;
+
 
 class RegisteredUserController extends Controller
 {
@@ -19,7 +21,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'title' => 'Register'
+        ]);
     }
 
     /**
@@ -30,21 +34,22 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name' => 'required|string|max:255',
+            'npk' => 'required|string|max:255|unique:users',
+            'email' => 'nullable|email|max:255|unique:users',
+            'password' => 'required|string|confirmed|min:6',
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'npk' => $request->npk,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'produksi', 
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }
