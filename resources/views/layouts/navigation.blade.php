@@ -23,6 +23,14 @@
                     <x-nav-link :href="$dashboardRoute" :active="request()->url() == $dashboardRoute">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if ($user->role === 'produksi')
+                    <x-nav-link :href="route('produksi.dataMaster.index')"
+                        :active="request()->routeIs('produksi.dataMaster.*')">
+                        {{ __('Data Master') }}
+                    </x-nav-link>
+                    @elseif ($user->role === 'quality')
+                    
+                    @endif
                 </div>
             </div>
 
@@ -83,6 +91,15 @@
             <x-responsive-nav-link :href="$dashboardRoute" :active="request()->url() == $dashboardRoute">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if ($user->role === 'produksi')
+            <x-responsive-nav-link :href="route('produksi.dataMaster.index')"
+                :active="request()->routeIs('produksi.dataMaster.*')">
+                {{ __('Data Master') }}
+            </x-responsive-nav-link>
+            @elseif ($user->role === 'quality')
+
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

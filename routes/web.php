@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
 use App\Http\Controllers\Quality\QualityDashboardController;
+use App\Http\Controllers\Produksi\ChangeModelController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,6 +16,15 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'role:produksi'])->group(function () {
     Route::get('/produksi/dashboard', [ProduksiDashboardController::class, 'index'])->name('produksi.dashboard');
+    // Manage Data Master
+    Route::get('/produksi/data-master', [ChangeModelController::class, 'index'])->name('produksi.dataMaster.index');
+    Route::get('/data-master/create', [ChangeModelController::class, 'create'])->name('produksi.dataMaster.create');
+    Route::post('/data-master', [ChangeModelController::class, 'store'])->name('produksi.dataMaster.store');
+    Route::get('/data-master/{id}', [ChangeModelController::class, 'show'])->name('produksi.dataMaster.show');
+    Route::get('/data-master/{id}/edit', [ChangeModelController::class, 'edit'])->name('produksi.dataMaster.edit');
+    Route::put('/data-master/{id}', [ChangeModelController::class, 'update'])->name('produksi.dataMaster.update');
+    Route::delete('/data-master/{id}', [ChangeModelController::class, 'destroy'])->name('produksi.dataMaster.destroy');
+
 });
 
 Route::middleware(['auth', 'role:quality'])->group(function () {
