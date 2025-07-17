@@ -25,6 +25,10 @@
                     </x-nav-link>
 
                     @if ($user->role === 'produksi')
+                    <x-nav-link :href="route('produksi.inputChecksheet.index')"
+                        :active="request()->routeIs('produksi.inputChecksheet.index') || request()->routeIs('produksi.inputChecksheet.*')">
+                        {{ __('Input Checksheet') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('managementUser')"
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}
@@ -106,6 +110,10 @@
             </x-responsive-nav-link>
 
             @if ($user->role === 'produksi')
+            <x-responsive-nav-link :href="route('produksi.inputChecksheet.index')"
+                :active="request()->routeIs('produksi.inputChecksheet.*')">
+                {{ __('InputChecksheet') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('managementUser')"
                 :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                 {{ __('Management User') }}
@@ -114,6 +122,8 @@
                 :active="request()->routeIs('dataMaster.*')">
                 {{ __('Data Master') }}
             </x-responsive-nav-link>
+            
+
             @elseif ($user->role === 'quality')
             <x-responsive-nav-link :href="route('managementUser')"
                 :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">

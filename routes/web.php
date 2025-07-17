@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ManagementUserController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
+use App\Http\Controllers\Produksi\InputChecksheetController;
 use App\Http\Controllers\Quality\QualityDashboardController;
 use App\Http\Controllers\ChangeModelController;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +18,10 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'role:produksi'])->group(function () {
     Route::get('/produksi/dashboard', [ProduksiDashboardController::class, 'index'])->name('produksi.dashboard');
-    
+    // Cs
+    Route::get('/produksi/input-checksheet', [InputChecksheetController::class, 'index'])->name('produksi.inputChecksheet.index');
+    Route::get('/produksi/filter-checksheet', [InputChecksheetController::class, 'filter'])->name('produksi.inputChecksheet.filter');
+
 
 });
 
