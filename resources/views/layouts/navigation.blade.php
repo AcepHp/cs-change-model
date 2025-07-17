@@ -29,8 +29,8 @@
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('produksi.dataMaster.index')"
-                        :active="request()->routeIs('produksi.dataMaster.*')">
+                    <x-nav-link :href="route('dataMaster.index')"
+                        :active="request()->routeIs('dataMaster.*')">
                         {{ __('Data Master') }}
                     </x-nav-link>
 
@@ -38,6 +38,10 @@
                     <x-nav-link :href="route('managementUser')"
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('dataMaster.index')"
+                        :active="request()->routeIs('dataMaster.*')">
+                        {{ __('Data Master') }}
                     </x-nav-link>
                     @endif
                 </div>
@@ -106,14 +110,18 @@
                 :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                 {{ __('Management User') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('produksi.dataMaster.index')"
-                :active="request()->routeIs('produksi.dataMaster.*')">
+            <x-responsive-nav-link :href="route('dataMaster.index')"
+                :active="request()->routeIs('dataMaster.*')">
                 {{ __('Data Master') }}
             </x-responsive-nav-link>
             @elseif ($user->role === 'quality')
             <x-responsive-nav-link :href="route('managementUser')"
                 :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                 {{ __('Management User') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dataMaster.index')"
+                :active="request()->routeIs('dataMaster.*')">
+                {{ __('Data Master') }}
             </x-responsive-nav-link>
             @endif
         </div>

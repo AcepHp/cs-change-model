@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Produksi;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -27,14 +27,14 @@ class ChangeModelController extends Controller
         $lines = ChangeModel::select('line')->distinct()->pluck('line')->filter();
         $models = ChangeModel::select('model')->distinct()->pluck('model')->filter();
 
-        return view('produksi.data-master.index', compact(
+        return view('data-master.index', compact(
             'dataChecksheet', 'areas', 'lines', 'models'
         ));
     }
 
     public function show($id){
         $item = ChangeModel::findOrFail($id);
-        return view('produksi.data-master.show', compact('item'));
+        return view('data-master.show', compact('item'));
     }
     
     public function create(){
@@ -54,7 +54,7 @@ class ChangeModelController extends Controller
         $models = ChangeModel::select('model')->distinct()->pluck('model');
         $stations = ChangeModel::select('station')->distinct()->pluck('station');
 
-        return view('produksi.data-master.create', compact('areas', 'lines', 'models', 'stations'));
+        return view('data-master.create', compact('areas', 'lines', 'models', 'stations'));
     }
 
     public function store(Request $request)
@@ -73,7 +73,7 @@ class ChangeModelController extends Controller
 
         ChangeModel::create($request->all());
 
-        return redirect()->route('produksi.dataMaster.index')->with('success', 'Data berhasil ditambahkan.');
+        return redirect()->route('dataMaster.index')->with('success', 'Data berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -95,7 +95,7 @@ class ChangeModelController extends Controller
         $models = ChangeModel::select('model')->distinct()->pluck('model');
         $stations = ChangeModel::select('station')->distinct()->pluck('station');
 
-        return view('produksi.data-master.edit', compact('item', 'areas', 'lines', 'models', 'stations'));
+        return view('data-master.edit', compact('item', 'areas', 'lines', 'models', 'stations'));
     }
 
     public function update(Request $request, $id)
@@ -116,13 +116,13 @@ class ChangeModelController extends Controller
 
         $item->update($request->all());
 
-        return redirect()->route('produksi.dataMaster.index')->with('success', 'Data berhasil diupdate.');
+        return redirect()->route('dataMaster.index')->with('success', 'Data berhasil diupdate.');
     }
 
     public function destroy($id)
     {
         ChangeModel::findOrFail($id)->delete();
-        return redirect()->route('produksi.dataMaster.index')->with('success', 'Data berhasil dihapus.');
+        return redirect()->route('dataMaster.index')->with('success', 'Data berhasil dihapus.');
     }
 
 }

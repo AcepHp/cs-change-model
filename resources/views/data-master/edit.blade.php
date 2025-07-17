@@ -12,7 +12,7 @@
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <form action="{{ route('produksi.dataMaster.update', $item->id) }}" method="POST" class="space-y-4">
+                    <form action="{{ route('dataMaster.update', $item->id) }}" method="POST" class="space-y-4">
                         @csrf
                         @method('PUT')
 
@@ -128,7 +128,7 @@
                         </div>
 
                         <div class="flex justify-end gap-3 items-center pt-4">
-                            <a href="{{ route('produksi.dataMaster.index') }}">
+                            <a href="{{ route('dataMaster.index') }}">
                                 <u>Kembali</u>
                             </a>
                             <x-primary-button>UPDATE</x-primary-button>

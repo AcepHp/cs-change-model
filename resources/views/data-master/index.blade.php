@@ -12,7 +12,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Management Data Master') }}
             </h2>
-            <a href="{{ route('produksi.dataMaster.create') }}">
+            <a href="{{ route('dataMaster.create') }}">
                 <x-primary-button>Tambah Data</x-primary-button>
             </a>
         </div>
@@ -29,7 +29,7 @@
                         x-effect="document.body.style.overflow = openModal ? 'hidden' : 'auto'">
 
                         {{-- Filter --}}
-                        <form method="GET" action="{{ route('produksi.dataMaster.index') }}"
+                        <form method="GET" action="{{ route('dataMaster.index') }}"
                             class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
 
                             <select name="area" class="border-gray-300 rounded-md">
@@ -59,7 +59,7 @@
 
                                 {{-- Tombol Reset --}}
                                 <x-secondary-button type="button"
-                                    onclick="window.location.href='{{ route('produksi.dataMaster.index') }}'">
+                                    onclick="window.location.href='{{ route('dataMaster.index') }}'">
                                     Reset
                                 </x-secondary-button>
                             </div>
@@ -100,20 +100,20 @@
                                             <td class="p-3">{{ $item->trigger }}</td>
                                             <td class="p-3">
                                                 <div class="flex justify-center">
-                                                    <a href="{{ route('produksi.dataMaster.show', $item->id) }}">
+                                                    <a href="{{ route('dataMaster.show', $item->id) }}">
                                                         <x-primary-button
                                                             class="bg-blue-400 hover:bg-blue-500 text-white px-3 py-1 me-2 text-sm">
                                                             Lihat
                                                         </x-primary-button>
                                                     </a>
-                                                    <a href="{{ route('produksi.dataMaster.edit', $item->id) }}">
+                                                    <a href="{{ route('dataMaster.edit', $item->id) }}">
                                                         <x-primary-button
                                                             class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 me-2 text-sm">
                                                             Edit
                                                         </x-primary-button>
                                                     </a>
                                                     <x-primary-button
-                                                        @click="openModal = true; deleteUrl = '{{ route('produksi.dataMaster.destroy', $item->id) }}'"
+                                                        @click="openModal = true; deleteUrl = '{{ route('dataMaster.destroy', $item->id) }}'"
                                                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm">
                                                         Hapus
                                                     </x-primary-button>
