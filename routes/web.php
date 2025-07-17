@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ManagementUserController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
 use App\Http\Controllers\Quality\QualityDashboardController;
 use App\Http\Controllers\Produksi\ChangeModelController;
@@ -35,6 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/management-user', [ManagementUserController::class, 'index'])->name('managementUser');
+    Route::get('/management-user/create', [ManagementUserController::class, 'create'])->name('user.create');
+    Route::post('/management-user', [ManagementUserController::class, 'store'])->name('user.store');
+    Route::get('/management-user/{id}/edit', [ManagementUserController::class, 'edit'])->name('user.edit');
+    Route::put('/management-user/{id}', [ManagementUserController::class, 'update'])->name('user.update');
+    Route::delete('/management-user/{id}', [ManagementUserController::class, 'destroy'])->name('user.destroy');
 });
 
 require __DIR__.'/auth.php';
