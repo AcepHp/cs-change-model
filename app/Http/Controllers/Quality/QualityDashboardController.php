@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Quality;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\LogDetailCs;
+use App\Models\LogCs;
+use App\Models\ChangeModel;
+
 
 class QualityDashboardController extends Controller
 {
