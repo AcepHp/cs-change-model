@@ -122,7 +122,7 @@
                                             Simpan
                                         </button>
                                         <div id="ng-warning-{{ $item->id }}" class="text-red-500 text-xs mt-1 hidden">
-                                            Status NG tidak dapat disubmit
+                                            
                                         </div>
                                     </td>
                                 </tr>
@@ -138,23 +138,133 @@
 
     {{-- Modal Scan Station --}}
     <div id="scannerStationModal"
-        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-4 w-full max-w-md relative">
-            <h2 class="text-lg font-semibold mb-4">Scan QR Station</h2>
-            <div id="readerStation" class="w-full"></div>
-            <button onclick="closeScanner('Station')"
-                class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+        class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto transform transition-all duration-300 scale-95 hover:scale-100">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Scan QR Station</h2>
+                        <p class="text-sm text-gray-600">Arahkan kamera ke QR code station</p>
+                    </div>
+                </div>
+                <button onclick="closeScanner('Station')"
+                    class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Scanner Area -->
+            <div class="p-6">
+                <div class="relative bg-gray-900 rounded-xl overflow-hidden shadow-inner">
+                    <div id="readerStation" class="w-full min-h-[300px] flex items-center justify-center">
+                        <div class="text-white text-center">
+                            <svg class="w-12 h-12 mx-auto mb-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4"></path>
+                            </svg>
+                            <p class="text-sm opacity-75">Memuat kamera...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Scan Frame Overlay -->
+                    <div class="absolute inset-0 pointer-events-none">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-white rounded-lg">
+                            <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-lg"></div>
+                            <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-lg"></div>
+                            <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-lg"></div>
+                            <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-blue-400 rounded-br-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Controls -->
+            <div class="flex items-center justify-between p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>Scanner aktif</span>
+                </div>
+                <button onclick="swapCameraStation()" 
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Ganti Kamera
+                </button>
+            </div>
         </div>
     </div>
 
     {{-- Modal Scan Barcode --}}
     <div id="scannerBarcodeModal"
-        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-4 w-full max-w-md relative">
-            <h2 class="text-lg font-semibold mb-4">Scan QR Barcode</h2>
-            <div id="readerBarcode" class="w-full"></div>
-            <button onclick="closeScanner('Barcode')"
-                class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+        class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto transform transition-all duration-300 scale-95 hover:scale-100">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-2xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Scan QR Barcode</h2>
+                        <p class="text-sm text-gray-600">Arahkan kamera ke QR code barcode</p>
+                    </div>
+                </div>
+                <button onclick="closeScanner('Barcode')"
+                    class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Scanner Area -->
+            <div class="p-6">
+                <div class="relative bg-gray-900 rounded-xl overflow-hidden shadow-inner">
+                    <div id="readerBarcode" class="w-full min-h-[300px] flex items-center justify-center">
+                        <div class="text-white text-center">
+                            <svg class="w-12 h-12 mx-auto mb-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4"></path>
+                            </svg>
+                            <p class="text-sm opacity-75">Memuat kamera...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Scan Frame Overlay -->
+                    <div class="absolute inset-0 pointer-events-none">
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-white rounded-lg">
+                            <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-400 rounded-tl-lg"></div>
+                            <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-400 rounded-tr-lg"></div>
+                            <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-400 rounded-bl-lg"></div>
+                            <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-400 rounded-br-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Controls -->
+            <div class="flex items-center justify-between p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>Scanner aktif</span>
+                </div>
+                <button onclick="swapCameraBarcode()" 
+                    class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Ganti Kamera
+                </button>
+            </div>
         </div>
     </div>
 
@@ -177,83 +287,128 @@
     let scannedStations = {};
     let itemValues = {}; // Store scanned/selected values for each item
     let submittedItems = new Set(); // Track submitted items
+    
+    // Camera swap variables
+    let currentCameraStation = "environment"; // Default to back camera
+    let currentCameraBarcode = "environment"; // Default to back camera
+    let availableCamerasStation = [];
+    let availableCamerasBarcode = [];
 
     function openStationScanner(station) {
         document.getElementById('scannerStationModal').classList.remove('hidden');
+        startStationScanner(station);
+    }
+
+    function startStationScanner(station) {
         if (!qrScannerStation) {
             qrScannerStation = new Html5Qrcode("readerStation");
         }
 
-        qrScannerStation.start({
-                facingMode: "environment"
-            }, {
-                fps: 10,
-                qrbox: 250
-            },
-            qrCodeMessage => {
-                if (qrCodeMessage.trim() === station.trim()) {
-                    scannedStations[station] = true;
+        // Get available cameras first
+        Html5Qrcode.getCameras().then(devices => {
+            availableCamerasStation = devices;
+            
+            const cameraConfig = currentCameraStation === "environment" ? 
+                { facingMode: "environment" } : 
+                { facingMode: "user" };
 
-                    // Update station button to unlocked state
-                    const stationBtn = document.getElementById(`station-scan-btn-${station}`);
-                    stationBtn.className = "inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700";
-                    stationBtn.innerHTML = `
-                        Station Unlocked
-                    `;
+            qrScannerStation.start(
+                cameraConfig,
+                {
+                    fps: 10,
+                    qrbox: 250
+                },
+                qrCodeMessage => {
+                    if (qrCodeMessage.trim() === station.trim()) {
+                        scannedStations[station] = true;
 
-                    // Enable all inputs for this station
-                    document.querySelectorAll(`[data-station="${station}"] button, [data-station="${station}"] select`).forEach(el => {
-                        if (!submittedItems.has(el.closest('tr').getAttribute('data-item-id'))) {
-                            el.disabled = false;
-                            el.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                            
-                            // Update button colors based on type
-                            if (el.id && el.id.includes('scan-button')) {
-                                el.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                                el.innerHTML = `
-                                    Scan Barcode
+                        // Update station button to unlocked state
+                        const stationBtn = document.getElementById(`station-scan-btn-${station}`);
+                        stationBtn.className = "inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700";
+                        stationBtn.innerHTML = `
+                            Station Unlocked
+                        `;
+
+                        // Enable all inputs for this station
+                        document.querySelectorAll(`[data-station="${station}"] button, [data-station="${station}"] select`).forEach(el => {
+                            if (!submittedItems.has(el.closest('tr').getAttribute('data-item-id'))) {
+                                el.disabled = false;
+                                el.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                                
+                                // Update button colors based on type
+                                if (el.id && el.id.includes('scan-button')) {
+                                    el.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                                    el.innerHTML = `
+                                        Scan Barcode
+                                    `;
+                                } else if (el.id && el.id.includes('submit-button')) {
+                                    el.classList.add('bg-green-600', 'hover:bg-green-700');
+                                    el.innerHTML = `
+                                        Simpan
+                                    `;
+                                } else if (el.tagName === 'SELECT') {
+                                    el.classList.remove('bg-gray-100');
+                                    el.classList.add('bg-white');
+                                }
+                            }
+                        });
+
+                        // Check if all stations are scanned
+                        const allStations = [...new Set(Array.from(document.querySelectorAll('[data-station]')).map(
+                            el => el.getAttribute('data-station')))];
+                        const allScanned = allStations.every(st => scannedStations[st]);
+
+                        if (allScanned) {
+                            const submitBtn = document.getElementById('submitAllBtn');
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                                submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                                submitBtn.innerHTML = `
+                                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Simpan Semua (Hanya OK)
                                 `;
-                            } else if (el.id && el.id.includes('submit-button')) {
-                                el.classList.add('bg-green-600', 'hover:bg-green-700');
-                                el.innerHTML = `
-                                    Simpan
-                                `;
-                            } else if (el.tagName === 'SELECT') {
-                                el.classList.remove('bg-gray-100');
-                                el.classList.add('bg-white');
                             }
                         }
-                    });
 
-                    // Check if all stations are scanned
-                    const allStations = [...new Set(Array.from(document.querySelectorAll('[data-station]')).map(
-                        el => el.getAttribute('data-station')))];
-                    const allScanned = allStations.every(st => scannedStations[st]);
-
-                    if (allScanned) {
-                        const submitBtn = document.getElementById('submitAllBtn');
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                            submitBtn.innerHTML = `
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="5 13l4 4L19 7"></path>
-                                </svg>
-                                Simpan Semua (Hanya OK)
-                            `;
-                        }
+                        showToast('success', `Station ${station} berhasil discan dan dibuka!`);
+                    } else {
+                        showModalAlert(`Scan: ${qrCodeMessage}<br>Diharapkan: ${station}`);
                     }
 
-                    showToast('success', `Station ${station} berhasil discan dan dibuka!`);
-                } else {
-                    showModalAlert(`Scan: ${qrCodeMessage}<br>Diharapkan: ${station}`);
-                }
+                    closeScanner('Station');
+                },
+                error => {}
+            ).catch(err => console.error("Camera error:", err));
+        }).catch(err => {
+            console.error("Error getting cameras:", err);
+        });
+    }
 
-                closeScanner('Station');
-            },
-            error => {}
-        ).catch(err => console.error("Camera error:", err));
+    function swapCameraStation() {
+        if (qrScannerStation && availableCamerasStation.length > 1) {
+            // Stop current scanner
+            qrScannerStation.stop().then(() => {
+                // Toggle camera
+                currentCameraStation = currentCameraStation === "environment" ? "user" : "environment";
+                
+                // Get current station from modal context
+                const station = document.querySelector('[data-station]').getAttribute('data-station');
+                
+                // Restart with new camera
+                setTimeout(() => {
+                    startStationScanner(station);
+                }, 100);
+                
+                showToast('info', `Switched to ${currentCameraStation === "environment" ? "back" : "front"} camera`);
+            }).catch(err => {
+                console.error("Error stopping scanner:", err);
+            });
+        } else {
+            showToast('error', 'Camera swap not available or only one camera detected');
+        }
     }
 
     function openBarcodeScanner(itemId, actualType) {
@@ -264,72 +419,107 @@
         }
 
         document.getElementById('scannerBarcodeModal').classList.remove('hidden');
+        startBarcodeScanner(itemId, actualType);
+    }
+
+    function startBarcodeScanner(itemId, actualType) {
         if (!qrScannerBarcode) {
             qrScannerBarcode = new Html5Qrcode("readerBarcode");
         }
 
-        qrScannerBarcode.start({
-                facingMode: "environment"
-            }, {
-                fps: 10,
-                qrbox: 250
-            },
-            qrCodeMessage => {
-                const trigger = document.getElementById(`trigger-${itemId}`).innerText.trim();
-                const display = document.getElementById(`value-display-${itemId}`);
-                const status = document.getElementById(`status-${itemId}`);
-                const submitButton = document.getElementById(`submit-button-${itemId}`);
-                const ngWarning = document.getElementById(`ng-warning-${itemId}`);
+        // Get available cameras first
+        Html5Qrcode.getCameras().then(devices => {
+            availableCamerasBarcode = devices;
+            
+            const cameraConfig = currentCameraBarcode === "environment" ? 
+                { facingMode: "environment" } : 
+                { facingMode: "user" };
 
-                // Store the scanned value
-                itemValues[itemId] = qrCodeMessage;
+            qrScannerBarcode.start(
+                cameraConfig,
+                {
+                    fps: 10,
+                    qrbox: 250
+                },
+                qrCodeMessage => {
+                    const trigger = document.getElementById(`trigger-${itemId}`).innerText.trim();
+                    const display = document.getElementById(`value-display-${itemId}`);
+                    const status = document.getElementById(`status-${itemId}`);
+                    const submitButton = document.getElementById(`submit-button-${itemId}`);
+                    const ngWarning = document.getElementById(`ng-warning-${itemId}`);
 
-                // Update display
-                const isImage = qrCodeMessage.match(/\.(jpeg|jpg|png)$/i);
-                if (isImage) {
-                    display.innerHTML =
-                        `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded">`;
-                } else {
-                    display.innerText = qrCodeMessage;
-                }
+                    // Store the scanned value
+                    itemValues[itemId] = qrCodeMessage;
 
-                // Determine status based on actual type
-                let statusValue = '';
-                if (actualType === 'scan') {
-                    statusValue = (qrCodeMessage === trigger) ? 'OK' : 'NG';
-                } else if (actualType === 'containscan') {
-                    statusValue = qrCodeMessage.includes(trigger) ? 'OK' : 'NG';
-                }
+                    // Update display
+                    const isImage = qrCodeMessage.match(/\.(jpeg|jpg|png)$/i);
+                    if (isImage) {
+                        display.innerHTML =
+                            `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded">`;
+                    } else {
+                        display.innerText = qrCodeMessage;
+                    }
 
-                status.innerText = statusValue;
-                status.className = `font-semibold ${statusValue === 'OK' ? 'text-green-600' : 'text-red-600'}`;
+                    // Determine status based on actual type
+                    let statusValue = '';
+                    if (actualType === 'scan') {
+                        statusValue = (qrCodeMessage === trigger) ? 'OK' : 'NG';
+                    } else if (actualType === 'containscan') {
+                        statusValue = qrCodeMessage.includes(trigger) ? 'OK' : 'NG';
+                    }
 
-                // Enable/disable submit button based on status
-                if (statusValue === 'NG') {
-                    submitButton.disabled = true;
-                    submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-400');
-                    submitButton.innerHTML = `
-                        <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Tidak Bisa Submit
-                    `;
-                    ngWarning.classList.remove('hidden');
-                } else {
-                    submitButton.disabled = false;
-                    submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-400');
-                    submitButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                    submitButton.innerHTML = `
-                        Simpan
-                    `;
-                    ngWarning.classList.add('hidden');
-                }
+                    status.innerText = statusValue;
+                    status.className = `font-semibold ${statusValue === 'OK' ? 'text-green-600' : 'text-red-600'}`;
 
+                    // Enable/disable submit button based on status
+                    if (statusValue === 'NG') {
+                        submitButton.disabled = true;
+                        submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-400');
+                        submitButton.innerHTML = `
+                            Tidak Bisa Submit
+                        `;
+                        ngWarning.classList.remove('hidden');
+                    } else {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-400');
+                        submitButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                        submitButton.innerHTML = `
+                            Simpan
+                        `;
+                        ngWarning.classList.add('hidden');
+                    }
+
+                    closeScanner('Barcode');
+                },
+                error => {}
+            ).catch(err => console.error("Camera error:", err));
+        }).catch(err => {
+            console.error("Error getting cameras:", err);
+        });
+    }
+
+    function swapCameraBarcode() {
+        if (qrScannerBarcode && availableCamerasBarcode.length > 1) {
+            // Stop current scanner
+            qrScannerBarcode.stop().then(() => {
+                // Toggle camera
+                currentCameraBarcode = currentCameraBarcode === "environment" ? "user" : "environment";
+                
+                // Get current item context (you might need to store this globally when opening scanner)
+                // For now, we'll restart the scanner with the new camera setting
+                // The scanner will be restarted when user clicks scan again
+                
+                showToast('info', `Switched to ${currentCameraBarcode === "environment" ? "back" : "front"} camera`);
+                
+                // Close and reopen scanner to apply new camera
                 closeScanner('Barcode');
-            },
-            error => {}
-        ).catch(err => console.error("Camera error:", err));
+            }).catch(err => {
+                console.error("Error stopping scanner:", err);
+            });
+        } else {
+            showToast('error', 'Camera swap not available or only one camera detected');
+        }
     }
 
     function updateCheckStatus(itemId) {
@@ -357,9 +547,6 @@
                 submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                 submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-400');
                 submitButton.innerHTML = `
-                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="6 18L18 6M6 6l12 12"></path>
-                    </svg>
                     Tidak Bisa Submit
                 `;
                 ngWarning.classList.remove('hidden');
