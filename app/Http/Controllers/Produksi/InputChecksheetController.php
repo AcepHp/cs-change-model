@@ -8,6 +8,10 @@ use App\Models\ChangeModel;
 use Carbon\Carbon;
 use App\Models\LogCs;
 use App\Models\LogDetailCs;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 
 class InputChecksheetController extends Controller
@@ -72,6 +76,125 @@ class InputChecksheetController extends Controller
             'isSubmitted' => $isSubmitted,
             'id_log' => $id_log
         ]);
+    }
+
+    public function saveChecksheetResult(Request $request)
+    {
+        Log::info('Save checksheet request:', $request->all());
+        
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validate([
+                'area' => 'required|string',
+                'line' => 'required|string',
+                'model' => 'required|string',
+                'station' => 'required|string',
+                'shift' => 'required|string',
+                'date' => 'required|date',
+                'item_id' => 'required|integer',
+                'scan_result' => 'nullable|string',
+                'production_status' => 'required|string|in:OK,NG',
+                'actual' => 'nullable|string'
+            ]);
+
+            // Validasi: Jika status NG, tidak boleh submit
+            if ($validated['production_status'] === 'NG') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status NG tidak dapat disubmit. Silakan perbaiki terlebih dahulu.'
+                ], 400);
+            }
+
+            Log::info('Validation passed:', $validated);
+
+            // Cari atau buat LogCs
+            $logCs = LogCs::firstOrCreate([
+                'area' => $validated['area'],
+                'line' => $validated['line'],
+                'model' => $validated['model'],
+                'shift' => $validated['shift'],
+                'date' => $validated['date']
+            ]);
+
+            Log::info('LogCs ID:', ['id' => $logCs->id_log]);
+
+            // Get checksheet item
+            $checksheetItem = ChangeModel::find($validated['item_id']);
+            
+            if (!$checksheetItem) {
+                Log::error('Checksheet item not found:', ['item_id' => $validated['item_id']]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Item checksheet tidak ditemukan'
+                ], 404);
+            }
+
+            Log::info('Checksheet item found:', $checksheetItem->toArray());
+
+            $scanResult = $validated['scan_result'] ?? $validated['actual'] ?? '';
+
+            // SELALU CREATE DATA BARU (TIDAK UPDATE)
+            $logDetail = LogDetailCs::create([
+                'id_log' => $logCs->id_log,
+                'station' => $validated['station'],
+                'check_item' => $checksheetItem->check_item,
+                'standard' => $checksheetItem->standard,
+                'scanResult' => $scanResult,
+                'prod_status' => $validated['production_status'],
+                'prod_checked_by' => Auth::check() ? Auth::user()->name : 'Produksi',
+                'prod_checked_at' => now(),
+                'quality_status' => null,
+                'quality_checked_by' => null,
+                'quality_checked_at' => null,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            
+            Log::info('New detail created:', ['id' => $logDetail->id_det]);
+
+            DB::commit();
+
+            $response = [
+                'success' => true,
+                'message' => 'Data berhasil disimpan',
+                'data' => [
+                    'log_id' => $logCs->id_log,
+                    'detail_id' => $logDetail->id_det,
+                    'scan_result' => $scanResult,
+                    'status' => $validated['production_status'],
+                    'checked_by' => $logDetail->prod_checked_by,
+                    'checked_at' => $logDetail->prod_checked_at->format('Y-m-d H:i:s'),
+                    'is_new_record' => true
+                ]
+            ];
+
+            Log::info('Success response:', $response);
+            return response()->json($response);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            Log::error('Validation error:', $e->errors());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . implode(', ', array_flatten($e->errors()))
+            ], 422);
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Save checksheet error:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     

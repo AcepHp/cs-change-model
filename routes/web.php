@@ -21,7 +21,7 @@ Route::middleware(['auth', 'role:produksi'])->group(function () {
     // Cs
     Route::get('/produksi/input-checksheet', [InputChecksheetController::class, 'index'])->name('produksi.inputChecksheet.index');
     Route::get('/produksi/filter-checksheet', [InputChecksheetController::class, 'filter'])->name('produksi.inputChecksheet.filter');
-
+    Route::post('produksi/checksheet/save', [InputChecksheetController::class, 'saveChecksheetResult'])->name('produksi.inputChecksheet.save');
 
 });
 
