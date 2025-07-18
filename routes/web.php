@@ -27,6 +27,8 @@ Route::middleware(['auth', 'role:produksi'])->group(function () {
 
 Route::middleware(['auth', 'role:quality'])->group(function () {
     Route::get('/quality/dashboard', [QualityDashboardController::class, 'index'])->name('quality.dashboard');
+    Route::get('/quality/dashboard/filter', [QualityDashboardController::class, 'filterData'])->name('quality.dashboard.filter');
+
 });
 
 Route::middleware('auth')->group(function () {
