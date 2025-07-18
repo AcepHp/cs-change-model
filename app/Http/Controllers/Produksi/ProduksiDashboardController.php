@@ -89,7 +89,7 @@ class ProduksiDashboardController extends Controller
             })
             ->orderBy('created_at', 'desc');
 
-        $totalTableData = $totalTableQuery->paginate(15)->appends($request->query());
+        $totalTableData = $totalTableQuery->paginate(10)->appends($request->query());
         
         $breadcrumbs = [
             ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
@@ -142,7 +142,7 @@ class ProduksiDashboardController extends Controller
             })
             ->orderBy('created_at', 'desc');
 
-        $totalTableData = $totalTableQuery->paginate(15)->appends($request->query());
+        $totalTableData = $totalTableQuery->paginate(10)->appends($request->query());
 
         return view('produksi.dashboard.partials.log_detail_table', compact('totalTableData'))->render();
     }
