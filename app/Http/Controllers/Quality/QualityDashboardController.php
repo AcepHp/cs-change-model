@@ -19,22 +19,23 @@ class QualityDashboardController extends Controller
 
         // Data untuk tabel hari ini (tanpa pagination)
         $logDetailTableData = LogDetailCs::with('log')
-            ->whereHas('log', function ($query) use ($today, $shift) {
-                $query->whereDate('date', $today);
-                if (!is_null($shift)) {
-                    $query->where('shift', $shift);
-                }
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        ->whereHas('log', function ($query) use ($today, $shift) {
+            $query->whereDate('date', $today);
+            if (!is_null($shift)) {
+                $query->where('shift', $shift);
+            }
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(5)
+        ->appends($request->query());
+
 
         $logTableData = LogCs::whereDate('date', $today)
-            ->when(!is_null($shift), function ($query) use ($shift) {
-                $query->where('shift', $shift);
-            })
-            ->orderBy('date', 'desc')
-            ->limit(10) // Batasi untuk performa
-            ->get();
+        ->when(!is_null($shift), function ($query) use ($shift) {
+            $query->where('shift', $shift);
+        })
+        ->orderBy('date', 'desc')
+        ->paginate(5); 
 
         // Statistics
         $checksheetToday = LogDetailCs::whereHas('log', fn($q) => $q->whereDate('date', $today))->count();
