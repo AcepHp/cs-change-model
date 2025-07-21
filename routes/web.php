@@ -5,6 +5,7 @@ use App\Http\Controllers\ManagementUserController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
 use App\Http\Controllers\Produksi\InputChecksheetController;
 use App\Http\Controllers\Quality\QualityDashboardController;
+use App\Http\Controllers\Quality\QualityValidationController;
 use App\Http\Controllers\ChangeModelController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,10 @@ Route::middleware(['auth', 'role:produksi'])->group(function () {
 
 Route::middleware(['auth', 'role:quality'])->group(function () {
     Route::get('/quality/dashboard', [QualityDashboardController::class, 'index'])->name('quality.dashboard');
+    // Quality Validation Routes
+    Route::get('/quality/validation', [QualityValidationController::class, 'index'])->name('quality.validation.index');
+    Route::get('/quality/validation/{logId}', [QualityValidationController::class, 'validate'])->name('quality.validation.form');
+    Route::post('/quality/validation/save', [QualityValidationController::class, 'saveValidation'])->name('quality.validation.save');
 
 });
 

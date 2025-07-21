@@ -14,6 +14,7 @@ class LogDetailCs extends Model
     
     protected $fillable = [
         'id_log',
+        'list',
         'station',
         'check_item',
         'standard',

@@ -11,6 +11,7 @@ class CreateLogDetailCsTable extends Migration
         Schema::create('log_detail_cs', function (Blueprint $table) {
             $table->bigIncrements('id_det');
             $table->unsignedBigInteger('id_log');
+            $table->integer('list')->nullable();
             $table->string('station', 50);
             $table->string('check_item', 100);
             $table->string('standard', 100);

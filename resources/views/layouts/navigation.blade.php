@@ -39,6 +39,10 @@
                     </x-nav-link>
 
                     @elseif ($user->role === 'quality')
+                    <x-nav-link :href="route('quality.validation.index')"
+                        :active="request()->routeIs('quality.validation.index') || request()->routeIs('quality.validation.*')">
+                        {{ __('Validasi Checksheet') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('managementUser')"
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}

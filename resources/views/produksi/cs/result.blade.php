@@ -68,7 +68,7 @@
                                 $isImage = in_array($extension, ['png', 'jpg', 'jpeg']);
                                 $actualType = strtolower($item->actual);
                                 @endphp
-                                <tr data-item-id="{{ $item->id }}" id="row-{{ $item->id }}">
+                                <tr data-item-id="{{ $item->id }}" data-item-list="{{ $item->list }}" id="row-{{ $item->id }}">
                                     <td class="border px-3 py-2">{{ $item->list }}</td>
                                     <td class="border px-3 py-2">
                                         @if ($isImage)

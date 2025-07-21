@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 
-
 class InputChecksheetController extends Controller
 {
     public function index()
@@ -95,7 +94,8 @@ class InputChecksheetController extends Controller
                 'item_id' => 'required|integer',
                 'scan_result' => 'nullable|string',
                 'production_status' => 'required|string|in:OK,NG',
-                'actual' => 'nullable|string'
+                'actual' => 'nullable|string',
+                'list' => 'nullable|string' // Added list validation
             ]);
 
             // Validasi: Jika status NG, tidak boleh submit
@@ -141,6 +141,7 @@ class InputChecksheetController extends Controller
                 'check_item' => $checksheetItem->check_item,
                 'standard' => $checksheetItem->standard,
                 'scanResult' => $scanResult,
+                'list' => $validated['list'] ?? $checksheetItem->list, // Include list field
                 'prod_status' => $validated['production_status'],
                 'prod_checked_by' => Auth::check() ? Auth::user()->name : 'Produksi',
                 'prod_checked_at' => now(),
@@ -162,6 +163,7 @@ class InputChecksheetController extends Controller
                     'log_id' => $logCs->id_log,
                     'detail_id' => $logDetail->id_det,
                     'scan_result' => $scanResult,
+                    'list' => $logDetail->list,
                     'status' => $validated['production_status'],
                     'checked_by' => $logDetail->prod_checked_by,
                     'checked_at' => $logDetail->prod_checked_at->format('Y-m-d H:i:s'),
