@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManagementUserController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
 use App\Http\Controllers\Produksi\InputChecksheetController;
@@ -53,6 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/data-master/{id}/edit', [ChangeModelController::class, 'edit'])->name('dataMaster.edit');
     Route::put('/data-master/{id}', [ChangeModelController::class, 'update'])->name('dataMaster.update');
     Route::delete('/data-master/{id}', [ChangeModelController::class, 'destroy'])->name('dataMaster.destroy');
+    // Export
+    Route::prefix('/export')->name('export.')->group(function () {
+        Route::get('/', [ExportController::class, 'index'])->name('index');
+        Route::post('/excel', [ExportController::class, 'exportExcel'])->name('excel');
+        Route::post('/pdf', [ExportController::class, 'exportPdf'])->name('pdf');
+    });
+    
 });
 
 require __DIR__.'/auth.php';

@@ -37,7 +37,10 @@
                         :active="request()->routeIs('dataMaster.*')">
                         {{ __('Data Master') }}
                     </x-nav-link>
-
+                    <x-nav-link :href="route('export.index')"
+                        :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                        {{ __('Export Data') }}
+                    </x-nav-link>
                     @elseif ($user->role === 'quality')
                     <x-nav-link :href="route('quality.validation.index')"
                         :active="request()->routeIs('quality.validation.index') || request()->routeIs('quality.validation.*')">
@@ -50,6 +53,10 @@
                     <x-nav-link :href="route('dataMaster.index')"
                         :active="request()->routeIs('dataMaster.*')">
                         {{ __('Data Master') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('export.index')"
+                        :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                        {{ __('Export Data') }}
                     </x-nav-link>
                     @endif
                 </div>
