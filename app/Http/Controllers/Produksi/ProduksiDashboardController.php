@@ -112,5 +112,4 @@ class ProduksiDashboardController extends Controller
         ));
     }
 
-    // Hapus method filterData() karena sudah tidak diperlukan
 }

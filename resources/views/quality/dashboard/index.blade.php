@@ -378,7 +378,7 @@
             $('#table-container').addClass('opacity-50 pointer-events-none');
 
             $.ajax({
-                url: "{{ route('quality.dashboard.filter') }}",
+                url: "{{ route('quality.dashboard') }}", // Ubah ke route dashboard utama
                 type: 'GET',
                 data: {
                     area: area || null,
@@ -386,6 +386,9 @@
                     model: model || null,
                     shift_filter: shift || null,
                     date: date || null
+                },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Pastikan request dikenali sebagai AJAX
                 },
                 success: function(response) {
                     $('#table-container').removeClass('opacity-50 pointer-events-none');
