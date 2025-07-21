@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use App\Models\LogDetailCs;
 use App\Models\LogCs;
 use App\Models\ChangeModel;
+use App\Models\PartModel;
+
 
 class ProduksiDashboardController extends Controller
 {

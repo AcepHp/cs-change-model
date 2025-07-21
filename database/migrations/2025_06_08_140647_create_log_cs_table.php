@@ -15,8 +15,6 @@ class CreateLogCsTable extends Migration
             $table->string('model', 50);
             $table->string('shift', 10)->nullable();
             $table->date('date')->nullable();
-            $table->string('status', 20)->nullable();
-            $table->string('image', 255)->nullable(); 
         });
     }
 

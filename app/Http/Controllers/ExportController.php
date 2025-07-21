@@ -216,7 +216,18 @@ class ExportController extends Controller
                         $q->where('shift', $shift);
                     });
                 })
-                ->orderBy('created_at', 'desc');
+                ->orderBy(LogCs::select('date')
+                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
+                ->orderBy(LogCs::select('shift')
+                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
+                ->orderBy(LogCs::select('area')
+                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
+                ->orderBy(LogCs::select('line')
+                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
+                ->orderBy(LogCs::select('model')
+                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
+                ->orderBy('list', 'asc');
+
 
             $data = $query->get();
             $totalRecords = $data->count();

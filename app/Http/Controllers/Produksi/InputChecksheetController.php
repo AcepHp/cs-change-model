@@ -64,6 +64,7 @@ class InputChecksheetController extends Controller
 
         $id_log = $log ? $log->id_log : null;
         
+        
         return view('produksi.cs.result', [
             'title' => 'Hasil Filter Checksheet',
             'results' => $results,

@@ -8,9 +8,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="GET" action="{{ route('produksi.inputChecksheet.filter') }}">
-
-
+                <form id="filter-form" method="GET" action="{{ route('produksi.inputChecksheet.filter') }}">
                     {{-- Baris atas: Shift & Tanggal --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
@@ -68,7 +66,7 @@
                     </div>
 
                     <div class="mt-8 text-right">
-                        <x-primary-button class="px-6 py-2">
+                        <x-primary-button id="submit-btn" class="px-6 py-2">
                             {{ __('Filter Data') }}
                         </x-primary-button>
                     </div>
@@ -77,4 +75,41 @@
         </div>
     </div>
 
+    <!-- Modal Peringatan -->
+    <div id="warningModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
+            <h2 class="text-lg font-semibold mb-4 text-red-600">Peringatan</h2>
+            <p class="text-gray-700 mb-6">Silakan isi semua filter sebelum menekan tombol submit.</p>
+            <x-primary-button onclick="closeModal()" class=" text-white px-4 py-2 rounded hover:bg-black">
+                Tutup
+            </x-primary-button>
+        </div>
+    </div>
+
+    <!-- Script Validasi -->
+    <script>
+        document.getElementById('submit-btn').addEventListener('click', function(event) {
+            event.preventDefault(); // Cegah form dikirim langsung
+
+            const requiredFields = ['shift', 'date', 'area', 'line', 'model'];
+            let valid = true;
+
+            requiredFields.forEach(function(id) {
+                const field = document.getElementById(id);
+                if (!field.value) {
+                    valid = false;
+                }
+            });
+
+            if (!valid) {
+                document.getElementById('warningModal').classList.remove('hidden');
+            } else {
+                document.getElementById('filter-form').submit();
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('warningModal').classList.add('hidden');
+        }
+    </script>
 </x-app-layout>

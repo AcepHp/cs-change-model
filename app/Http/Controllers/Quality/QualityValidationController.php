@@ -68,7 +68,7 @@ class QualityValidationController extends Controller
         $models = LogCs::select('model')->distinct()->orderBy('model')->pluck('model');
 
         return view('quality.validation.index', [
-            'title' => 'Menu Validation Checklist - Quality',
+            'title' => 'Validation Checksheet',
             'logData' => $logData,
             'areas' => $areas,
             'lines' => $lines,
@@ -91,7 +91,7 @@ class QualityValidationController extends Controller
         $isFullyValidated = $totalDetails > 0 && $totalDetails === $validatedDetails;
 
         return view('quality.validation.form', [
-            'title' => 'Validasi Quality - ' . $log->area . ' | ' . $log->line . ' | ' . $log->model,
+            'title' => 'Validasi Quality',
             'log' => $log,
             'isFullyValidated' => $isFullyValidated
         ]);

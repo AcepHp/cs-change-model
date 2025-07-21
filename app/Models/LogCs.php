@@ -18,8 +18,6 @@ class LogCs extends Model
         'model',
         'shift',
         'date',
-        'status',
-        'image'
     ];
 
     protected $casts = [
