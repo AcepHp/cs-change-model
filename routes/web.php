@@ -12,23 +12,18 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware(['auth', 'role:produksi'])->group(function () {
     Route::get('/produksi/dashboard', [ProduksiDashboardController::class, 'index'])->name('produksi.dashboard');
     // Cs
     Route::get('/produksi/input-checksheet', [InputChecksheetController::class, 'index'])->name('produksi.inputChecksheet.index');
     Route::get('/produksi/filter-checksheet', [InputChecksheetController::class, 'filter'])->name('produksi.inputChecksheet.filter');
     Route::post('produksi/checksheet/save', [InputChecksheetController::class, 'saveChecksheetResult'])->name('produksi.inputChecksheet.save');
-    Route::get('/produksi/dashboard/filter', [ProduksiDashboardController::class, 'filterData'])->name('produksi.dashboard.filter');
+    // Hapus route filter yang terpisah karena sudah tidak diperlukan
 });
 
 Route::middleware(['auth', 'role:quality'])->group(function () {
     Route::get('/quality/dashboard', [QualityDashboardController::class, 'index'])->name('quality.dashboard');
     Route::get('/quality/dashboard/filter', [QualityDashboardController::class, 'filterData'])->name('quality.dashboard.filter');
-
 });
 
 Route::middleware('auth')->group(function () {

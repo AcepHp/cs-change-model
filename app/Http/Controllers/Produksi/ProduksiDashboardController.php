@@ -98,7 +98,7 @@ class ProduksiDashboardController extends Controller
 
         $title = 'Dashboard';
 
-        // Jika request AJAX untuk filter
+        // Jika request AJAX untuk filter, return hanya table
         if ($request->ajax()) {
             return view('produksi.dashboard.partials.log_detail_table', compact('totalTableData'))->render();
         }
@@ -112,38 +112,5 @@ class ProduksiDashboardController extends Controller
         ));
     }
 
-    public function filterData(Request $request)
-    {
-        $totalTableQuery = LogDetailCs::with('log')
-            ->when($request->area, function ($query, $area) {
-                $query->whereHas('log', function ($q) use ($area) {
-                    $q->where('area', $area);
-                });
-            })
-            ->when($request->line, function ($query, $line) {
-                $query->whereHas('log', function ($q) use ($line) {
-                    $q->where('line', $line);
-                });
-            })
-            ->when($request->model, function ($query, $model) {
-                $query->whereHas('log', function ($q) use ($model) {
-                    $q->where('model', $model);
-                });
-            })
-            ->when($request->shift_filter, function ($query, $shift) {
-                $query->whereHas('log', function ($q) use ($shift) {
-                    $q->where('shift', $shift);
-                });
-            })
-            ->when($request->date, function ($query, $date) {
-                $query->whereHas('log', function ($q) use ($date) {
-                    $q->whereDate('date', $date);
-                });
-            })
-            ->orderBy('created_at', 'desc');
-
-        $totalTableData = $totalTableQuery->paginate(10)->appends($request->query());
-
-        return view('produksi.dashboard.partials.log_detail_table', compact('totalTableData'))->render();
-    }
+    // Hapus method filterData() karena sudah tidak diperlukan
 }
