@@ -9,7 +9,6 @@ use App\Models\LogDetailCs;
 use App\Models\LogCs;
 use App\Models\ChangeModel;
 
-
 class QualityDashboardController extends Controller
 {
     public function index(Request $request)
@@ -17,25 +16,25 @@ class QualityDashboardController extends Controller
         $today = Carbon::today();
         $shift = $request->get('shift');
 
-        // Data untuk tabel hari ini (tanpa pagination)
+        // Data untuk tabel hari ini (dengan pagination)
         $logDetailTableData = LogDetailCs::with('log')
-        ->whereHas('log', function ($query) use ($today, $shift) {
-            $query->whereDate('date', $today);
-            if (!is_null($shift)) {
-                $query->where('shift', $shift);
-            }
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate(5)
-        ->appends($request->query());
+            ->whereHas('log', function ($query) use ($today, $shift) {
+                $query->whereDate('date', $today);
+                if (!is_null($shift)) {
+                    $query->where('shift', $shift);
+                }
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(5)
+            ->appends($request->query());
 
-
+        // Data untuk tabel log utama
         $logTableData = LogCs::whereDate('date', $today)
-        ->when(!is_null($shift), function ($query) use ($shift) {
-            $query->where('shift', $shift);
-        })
-        ->orderBy('date', 'desc')
-        ->paginate(5); 
+            ->when(!is_null($shift), function ($query) use ($shift) {
+                $query->where('shift', $shift);
+            })
+            ->orderBy('date', 'desc')
+            ->paginate(5);
 
         // Statistics
         $checksheetToday = LogDetailCs::whereHas('log', fn($q) => $q->whereDate('date', $today))->count();
@@ -43,25 +42,36 @@ class QualityDashboardController extends Controller
         $checksheetShift2 = LogDetailCs::whereHas('log', fn($q) => $q->whereDate('date', $today)->where('shift', 2))->count();
         $totalCSChangeModel = ChangeModel::count();
 
-        $okCount = $logDetailTableData->where('prod_status', 'OK')->count();
-        $ngCount = $logDetailTableData->where('prod_status', 'NG')->count();
-        
-        $qualityOkCount = $logDetailTableData->where('quality_status', 'OK')->count();
-        $qualityNgCount = $logDetailTableData->where('quality_status', 'NG')->count();
-        $qualityPendingCount = $logDetailTableData->whereNull('quality_status')->count();
-        
-        $totalQualityValidated = LogDetailCs::whereNotNull('quality_status')->whereHas('log', fn($q) => $q->whereDate('date', $today))->count();
+        // ✅ PERBAIKAN: Ambil semua data hari ini tanpa pagination untuk akurasi perhitungan chart
+        $logDetailTodayData = LogDetailCs::whereHas('log', function ($query) use ($today, $shift) {
+            $query->whereDate('date', $today);
+            if (!is_null($shift)) {
+                $query->where('shift', $shift);
+            }
+        })->get();
+
+        // ✅ Gunakan seluruh data untuk perhitungan OK/NG
+        $okCount = $logDetailTodayData->where('prod_status', 'OK')->count();
+        $ngCount = $logDetailTodayData->where('prod_status', 'NG')->count();
+
+        $qualityOkCount = $logDetailTodayData->where('quality_status', 'OK')->count();
+        $qualityNgCount = $logDetailTodayData->where('quality_status', 'NG')->count();
+        $qualityPendingCount = $logDetailTodayData->whereNull('quality_status')->count();
+
+        $totalQualityValidated = LogDetailCs::whereNotNull('quality_status')
+            ->whereHas('log', fn($q) => $q->whereDate('date', $today))
+            ->count();
         $totalQualityOkAll = LogDetailCs::where('quality_status', 'OK')->count();
         $totalQualityNgAll = LogDetailCs::where('quality_status', 'NG')->count();
         $totalQualityValidatedToday = LogDetailCs::whereHas('log', fn($q) => $q->whereDate('date', $today))
             ->whereNotNull('quality_status')
             ->count();
-        
+
         // Filter options
         $areas = \DB::table('log_cs')->select('area')->distinct()->pluck('area');
         $lines = \DB::table('log_cs')->select('line')->distinct()->pluck('line');
         $models = ChangeModel::select('model')->distinct()->pluck('model');
-        
+
         // Data untuk tabel total dengan pagination dan filter
         $totalTableQuery = LogDetailCs::with('log')
             ->when($request->area, function ($query, $area) {
@@ -92,7 +102,7 @@ class QualityDashboardController extends Controller
             ->orderBy('created_at', 'desc');
 
         $totalTableData = $totalTableQuery->paginate(10)->appends($request->query());
-        
+
         $breadcrumbs = [
             ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
             ['label' => 'Dashboard', 'url' => '/dashboard', 'active' => true],
