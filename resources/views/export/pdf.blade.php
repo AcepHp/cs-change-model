@@ -203,8 +203,7 @@
     <div class="header-container">
         <div class="logo-section">
             <div class="logo-left">
-                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/AVI.png'))) }}"
-                    alt="AVI Logo">
+                <img src="{{ asset('assets/images/Avi.png') }}" alt="PT Astra Visteon Indonesia Logo">
             </div>
             <div class="company-info">
                 <h1 class="company-name">PT ASTRA VISTEON INDONESIA</h1>

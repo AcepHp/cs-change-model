@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'Audit Proses | PT. Astra Visteon Indonesia' }}</title>
+        <title>{{ $title ?? 'Change Model | PT. Astra Visteon Indonesia' }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
