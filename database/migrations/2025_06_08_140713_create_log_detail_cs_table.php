@@ -15,7 +15,7 @@ class CreateLogDetailCsTable extends Migration
             $table->string('station', 50);
             $table->string('check_item', 100);
             $table->string('standard', 100);
-            $table->string('scanResult', 10)->nullable();
+            $table->string('scanResult', 20)->nullable();
             $table->string('prod_status', 10)->nullable(); 
             $table->string('prod_checked_by', 50)->nullable();
             $table->timestamp('prod_checked_at')->nullable();
@@ -26,9 +26,9 @@ class CreateLogDetailCsTable extends Migration
             $table->timestamps();
 
             $table->foreign('id_log')
-                  ->references('id_log')
-                  ->on('log_cs')
-                  ->onDelete('cascade');
+                ->references('id_log')
+                ->on('log_cs')
+                ->onDelete('cascade');
         });
     }
 
