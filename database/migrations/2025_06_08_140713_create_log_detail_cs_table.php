@@ -16,6 +16,7 @@ class CreateLogDetailCsTable extends Migration
             $table->string('check_item', 100);
             $table->string('standard', 100);
             $table->string('scanResult', 20)->nullable();
+            $table->string('resultImage')->nullable(); 
             $table->string('prod_status', 10)->nullable(); 
             $table->string('prod_checked_by', 50)->nullable();
             $table->timestamp('prod_checked_at')->nullable();

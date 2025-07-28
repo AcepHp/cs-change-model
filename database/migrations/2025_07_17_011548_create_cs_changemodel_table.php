@@ -22,6 +22,7 @@ class CreateCsChangemodelTable extends Migration
             $table->string('standard', 100)->nullable();
             $table->string('actual', 50)->nullable();
             $table->string('trigger', 50)->nullable();
+            $table->enum('image_type', ['labelImage', 'pacoImage', 'tagImage'])->nullable();
         });
     }
 

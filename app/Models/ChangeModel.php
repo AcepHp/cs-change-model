@@ -13,7 +13,7 @@ class ChangeModel extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'area', 'line', 'model', 'list', 'station', 'check_item', 'standard', 'actual', 'trigger',
+        'area', 'line', 'model', 'list', 'station', 'check_item', 'standard', 'actual', 'trigger', 'image_type'
     ];
 }
 

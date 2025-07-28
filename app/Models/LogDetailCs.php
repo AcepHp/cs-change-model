@@ -19,6 +19,7 @@ class LogDetailCs extends Model
         'check_item',
         'standard',
         'scanResult',
+        'resultImage',
         'prod_status',
         'prod_checked_by',
         'prod_checked_at',
