@@ -202,9 +202,6 @@
 <body>
     <div class="header-container">
         <div class="logo-section">
-            <div class="logo-left">
-                <img src="{{ asset('assets/images/Avi.png') }}" alt="PT Astra Visteon Indonesia Logo">
-            </div>
             <div class="company-info">
                 <h1 class="company-name">PT ASTRA VISTEON INDONESIA</h1>
                 <p class="company-subtitle">Automotive Cockpit Electronics Manufacturer</p>
