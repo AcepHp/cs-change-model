@@ -65,6 +65,7 @@
                                     <th class="border px-3 py-2 w-[300px]">Standard</th>
                                     <th class="border px-3 py-2 w-[200px]">Scan Result</th>
                                     <th class="border px-3 py-2 w-[100px]">Prod Status</th>
+                                    <th class="border px-3 py-2 w-[100px]">Prod Image</th> {{-- New column for Production Image --}}
                                     <th class="border px-3 py-2 w-[150px]">Quality Validation</th>
                                     <th class="border px-3 py-2 w-[100px]">Quality Status</th>
                                     <th class="border px-3 py-2 w-[100px]">Action</th>
@@ -81,7 +82,7 @@
                                     <td class="border px-3 py-2">
                                         @if ($isImage)
                                         <img src="{{ asset('storage/' . $item->check_item) }}"
-                                            alt="Check Item Image" class="w-30 h-auto rounded shadow">
+                                            alt="Check Item Image" class="w-30 h-auto rounded shadow cursor-pointer" onclick="openImageModal(this.src)">
                                         @else
                                         {{ $item->check_item }}
                                         @endif
@@ -94,7 +95,7 @@
                                             $isScanImage = in_array($scanExtension, ['png', 'jpg', 'jpeg']);
                                             @endphp
                                             @if($isScanImage)
-                                                <img src="{{ $item->scanResult }}" alt="Scan Result" class="w-20 h-20 object-contain border rounded">
+                                                <img src="{{ $item->scanResult }}" alt="Scan Result" class="w-20 h-20 object-contain border rounded cursor-pointer" onclick="openImageModal(this.src)">
                                             @else
                                                 {{ $item->scanResult }}
                                             @endif
@@ -107,6 +108,14 @@
                                             {{ $item->prod_status }}
                                         </span>
                                         
+                                    </td>
+                                    {{-- New column for Production Image --}}
+                                    <td class="border px-3 py-2 text-center">
+                                        @if($item->resultImage)
+                                            <img src="{{ $item->resultImage }}" alt="Production Image" class="w-20 h-20 object-contain border rounded mx-auto cursor-pointer" onclick="openImageModal(this.src)">
+                                        @else
+                                            <span class="text-gray-400 italic">-</span>
+                                        @endif
                                     </td>
                                     <td class="border px-3 py-2">
                                         @if($item->quality_status)
@@ -157,6 +166,14 @@
                 </div>
                 @endforeach
             </div>
+        </div>
+    </div>
+
+    {{-- Image Detail Modal --}}
+    <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-auto p-4 relative">
+            <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+            <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
         </div>
     </div>
 
@@ -296,6 +313,20 @@
         setTimeout(() => {
             toast.remove();
         }, 3000);
+    }
+
+    // --- Image Detail Modal Functions ---
+    const imageDetailModal = document.getElementById('imageDetailModal');
+    const modalImage = document.getElementById('modalImage');
+
+    function openImageModal(imageUrl) {
+        modalImage.src = imageUrl;
+        imageDetailModal.classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        imageDetailModal.classList.add('hidden');
+        modalImage.src = ''; // Clear image source
     }
     </script>
 </x-app-layout>

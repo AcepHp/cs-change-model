@@ -83,7 +83,7 @@
                                     <td class="border px-3 py-2">
                                         @if ($isImage)
                                         <img src="{{ asset('storage/' . $item->check_item) }}" alt="Check Item Image"
-                                            class="w-30 h-auto rounded shadow">
+                                            class="w-30 h-auto rounded shadow cursor-pointer" onclick="openImageModal(this.src)">
                                         @else
                                         {{ $item->check_item }}
                                         @endif
@@ -120,7 +120,15 @@
                                     <td class="border px-3 py-2">
                                         <span id="value-display-{{ $item->id }}" class="text-gray-600 italic">
                                             @if($existingDetail && $existingDetail->scanResult)
-                                                {{ $existingDetail->scanResult }}
+                                                @php
+                                                $scanResultExtension = strtolower(pathinfo($existingDetail->scanResult, PATHINFO_EXTENSION));
+                                                $isScanResultImage = in_array($scanResultExtension, ['png', 'jpg', 'jpeg']);
+                                                @endphp
+                                                @if($isScanResultImage)
+                                                    <img src="{{ $existingDetail->scanResult }}" alt="Scan Result" class="w-20 h-20 object-contain border rounded cursor-pointer" onclick="openImageModal(this.src)">
+                                                @else
+                                                    {{ $existingDetail->scanResult }}
+                                                @endif
                                             @else
                                                 Belum diisi
                                             @endif
@@ -153,7 +161,7 @@
                                             </button>
                                             <div class="image-preview mt-2" id="imagePreview-{{ $item->id }}">
                                                 @if($existingDetail && $existingDetail->resultImage)
-                                                    <img src="{{ asset($existingDetail->resultImage) }}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto">
+                                                    <img src="{{ asset($existingDetail->resultImage) }}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">
                                                 @endif
                                             </div>
                                         @else
@@ -440,6 +448,14 @@
         </div>
     </div>
 
+    {{-- Image Detail Modal --}}
+    <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-auto p-4 relative">
+            <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+            <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
+        </div>
+    </div>
+
     {{-- Include HTML5Qrcode --}}
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -620,7 +636,7 @@
             const targetItemId = button.dataset.itemId;
             const imagePreviewDiv = document.getElementById(`imagePreview-${targetItemId}`);
             if (imagePreviewDiv) {
-                imagePreviewDiv.innerHTML = `<img src="${capturedImageDataUrl}" alt="Captured Image" class="w-24 h-24 object-cover rounded-md mx-auto">`;
+                imagePreviewDiv.innerHTML = `<img src="${capturedImageDataUrl}" alt="Captured Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">`;
                 // Also, ensure the itemImages object reflects this for all items that now show the preview
                 // This is crucial because when saveItem is called for *any* of these items,
                 // it should send the correct image data.
@@ -816,7 +832,7 @@
                     const isImage = qrCodeMessage.match(/\.(jpeg|jpg|png)$/i);
                     if (isImage) {
                         display.innerHTML =
-                            `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded">`;
+                            `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded cursor-pointer" onclick="openImageModal(this.src)">`;
                     } else {
                         display.innerText = qrCodeMessage;
                     }
@@ -1049,7 +1065,7 @@
                     if (data.data.image_url) {
                         const imagePreviewDiv = document.getElementById(`imagePreview-${itemId}`);
                         if (imagePreviewDiv) {
-                            imagePreviewDiv.innerHTML = `<img src="${data.data.image_url}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto">`;
+                            imagePreviewDiv.innerHTML = `<img src="${data.data.image_url}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">`;
                         }
                     }
 
@@ -1142,6 +1158,20 @@
         setTimeout(() => {
             toast.remove();
         }, 3000);
+    }
+
+    // --- Image Detail Modal Functions ---
+    const imageDetailModal = document.getElementById('imageDetailModal');
+    const modalImage = document.getElementById('modalImage');
+
+    function openImageModal(imageUrl) {
+        modalImage.src = imageUrl;
+        imageDetailModal.classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        imageDetailModal.classList.add('hidden');
+        modalImage.src = ''; // Clear image source
     }
     </script>
 </x-app-layout>
