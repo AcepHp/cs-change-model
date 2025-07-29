@@ -606,7 +606,7 @@
         cameraFeed.classList.add('hidden');
         photoPreview.src = capturedImageDataUrl;
         photoPreview.classList.remove('hidden');
-        takePhotoBtn.innerText = 'Ambil Ulang'; // Change button text to "Ambil Ulang"
+        takePhotoBtn.classList.add('hidden');
         usePhotoBtn.classList.remove('hidden');
         usePhotoBtn.disabled = false;
     }
