@@ -170,8 +170,8 @@
     </div>
 
     {{-- Image Detail Modal --}}
-    <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-auto p-4 relative">
+    <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-auto p-4 relative">
             <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
             <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
         </div>
