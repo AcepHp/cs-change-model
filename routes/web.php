@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManagementUserController;
 use App\Http\Controllers\Produksi\ProduksiDashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Produksi\InputChecksheetController;
 use App\Http\Controllers\Quality\QualityDashboardController;
 use App\Http\Controllers\Quality\QualityValidationController;
@@ -62,6 +63,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/pdf', [ExportController::class, 'exportPdf'])->name('pdf');
     });
     
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
 });
 
 require __DIR__.'/auth.php';

@@ -43,6 +43,11 @@ class RouteServiceProvider extends ServiceProvider
                 return '/produksi/dashboard';
             case 'quality':
                 return '/quality/dashboard';
+            case 'admin':
+                return '/admin/dashboard';
+            default:
+                return '/dashboard';
         }
     }
+
 }

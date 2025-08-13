@@ -17,6 +17,7 @@
                     $dashboardRoute = match ($user->role) {
                     'produksi' => route('produksi.dashboard'),
                     'quality' => route('quality.dashboard'),
+                    'admin' => route('admin.dashboard'),
                     };
                     @endphp
 
@@ -29,14 +30,6 @@
                         :active="request()->routeIs('produksi.inputChecksheet.index') || request()->routeIs('produksi.inputChecksheet.*')">
                         {{ __('Input Checksheet') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('managementUser')"
-                        :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
-                        {{ __('Management User') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('dataMaster.index')"
-                        :active="request()->routeIs('dataMaster.*')">
-                        {{ __('Data Master') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('export.index')"
                         :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
                         {{ __('Export Data') }}
@@ -46,6 +39,11 @@
                         :active="request()->routeIs('quality.validation.index') || request()->routeIs('quality.validation.*')">
                         {{ __('Validasi Checksheet') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('export.index')"
+                        :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                        {{ __('Export Data') }}
+                    </x-nav-link>
+                    @elseif ($user->role === 'admin')
                     <x-nav-link :href="route('managementUser')"
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}
