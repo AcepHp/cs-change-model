@@ -12,7 +12,7 @@
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <form action="{{ route('dataMaster.store') }}" method="POST" class="space-y-4">
+                    <form action="{{ route('dataMaster.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,6 +132,30 @@
                                 <template x-if="actual === 'check'">
                                     <input type="hidden" name="trigger" value="">
                                 </template>
+                            </div>
+
+                            {{-- Tambahkan Image --}}
+                            <div x-data="{ addImage: false }" class="md:col-span-2">
+                                <label class="block font-medium text-gray-700">
+                                    <input type="checkbox" @change="addImage = !addImage"> Tambahkan Image?
+                                </label>
+
+                                <div x-show="addImage" class="mt-3 space-y-3">
+                                    {{-- Pilih Tipe Image --}}
+                                    <label class="block font-medium text-gray-700">Tipe Image</label>
+                                    <select name="image_type"
+                                        class="form-select w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-100">
+                                        <option value="">-- Pilih Tipe --</option>
+                                        <option value="labelImage">Label Image</option>
+                                        <option value="tagImage">Tag Image</option>
+                                        <option value="pacoImage">Paco Image</option>
+                                    </select>
+
+                                    {{-- Upload File --}}
+                                    <label class="block font-medium text-gray-700">Upload Image</label>
+                                    <input type="file" name="image_file" accept="image/*"
+                                        class="form-input w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-100">
+                                </div>
                             </div>
                         </div>
 

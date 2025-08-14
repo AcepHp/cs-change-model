@@ -69,12 +69,28 @@ class ChangeModelController extends Controller
             'standard' => 'nullable|string|max:500',
             'actual' => 'nullable|string|max:255',
             'trigger' => 'nullable|string|max:255',
+            'image_type' => 'nullable|string|in:labelImage,tagImage,pacoImage',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        ChangeModel::create($request->all());
+        $data = $request->all();
+
+        // Upload file ke storage/app/public/images
+        if ($request->hasFile('image_file')) {
+            $imageName = time() . '-' . $request->image_type . '.' . $request->file('image_file')->extension();
+
+            // Simpan ke storage/app/public/images
+            $request->file('image_file')->storeAs('images', $imageName, 'public');
+
+            // Simpan path relatif ke database
+            $data['check_item'] = 'images/' . $imageName;
+        }
+
+        ChangeModel::create($data);
 
         return redirect()->route('dataMaster.index')->with('success', 'Data berhasil ditambahkan.');
     }
+
 
     public function edit($id)
     {
@@ -124,5 +140,4 @@ class ChangeModelController extends Controller
         ChangeModel::findOrFail($id)->delete();
         return redirect()->route('dataMaster.index')->with('success', 'Data berhasil dihapus.');
     }
-
 }
