@@ -112,7 +112,7 @@ class ChangeModelController extends Controller
         return view('data-master.edit', compact('item', 'areas', 'lines', 'models', 'stations'));
     }
 
-public function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $item = ChangeModel::findOrFail($id);
 
