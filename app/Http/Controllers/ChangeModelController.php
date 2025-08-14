@@ -91,30 +91,28 @@ class ChangeModelController extends Controller
         return redirect()->route('dataMaster.index')->with('success', 'Data berhasil ditambahkan.');
     }
 
-
     public function edit($id)
     {
         $item = ChangeModel::findOrFail($id);
+
         $lines = ChangeModel::select('line')
-        ->distinct()
-        ->pluck('line')
-        ->filter()
-        ->sortBy(function ($line) {
-            if (is_numeric($line)) {
-                return (int) $line;
-            }
-            return 10000 + ord(strtolower($line[0]));
-        })
-        ->values();
+            ->distinct()
+            ->pluck('line')
+            ->filter()
+            ->sortBy(function ($line) {
+                if (is_numeric($line)) return (int) $line;
+                return 10000 + ord(strtolower($line[0]));
+            })
+            ->values();
+
         $areas = ChangeModel::select('area')->distinct()->pluck('area');
-        
         $models = ChangeModel::select('model')->distinct()->pluck('model');
         $stations = ChangeModel::select('station')->distinct()->pluck('station');
 
         return view('data-master.edit', compact('item', 'areas', 'lines', 'models', 'stations'));
     }
 
-    public function update(Request $request, $id)
+public function update(Request $request, $id)
     {
         $item = ChangeModel::findOrFail($id);
 
@@ -128,12 +126,30 @@ class ChangeModelController extends Controller
             'standard' => 'nullable|string|max:500',
             'actual' => 'nullable|string|max:255',
             'trigger' => 'nullable|string|max:255',
+            'image_type' => 'nullable|string|in:labelImage,tagImage,pacoImage',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $item->update($request->all());
+        $data = $request->all();
+
+        // Upload file baru jika ada
+        if ($request->hasFile('image_file')) {
+            $imageName = time() . '-' . $request->image_type . '.' . $request->file('image_file')->extension();
+            $request->file('image_file')->storeAs('images', $imageName, 'public');
+
+            // Hapus file lama jika ada
+            if ($item->check_item && \Storage::disk('public')->exists($item->check_item)) {
+                \Storage::disk('public')->delete($item->check_item);
+            }
+
+            $data['check_item'] = 'images/' . $imageName;
+        }
+
+        $item->update($data);
 
         return redirect()->route('dataMaster.index')->with('success', 'Data berhasil diupdate.');
     }
+
 
     public function destroy($id)
     {
