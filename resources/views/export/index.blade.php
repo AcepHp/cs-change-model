@@ -111,7 +111,7 @@
                     {{-- Tombol --}}
                     <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
                         <div class="flex gap-2">
-                            <button type="submit"
+                            <button type="submit" id="previewBtn"
                                 class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -141,12 +141,12 @@
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endif
                                 @endforeach
-                                <!-- <button type="submit" id="excelBtn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <button type="submit" id="excelBtn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                     Export Excel
-                                </button> -->
+                                </button>
                             </form>
 
                             <form method="POST" action="{{ route('export.pdf') }}" class="inline" id="pdfForm">
@@ -172,125 +172,142 @@
                 </form>
             </div>
 
-            <!-- Preview Section -->
-            @if($previewData && $totalRecords > 0)
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Preview Data</h3>
-                        <div class="flex items-center space-x-4">
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                Total: {{ number_format($totalRecords) }} records
-                            </span>
-                            <span class="text-sm text-gray-600">Menampilkan 10 data pertama</span>
+            <!-- Enhanced Preview Section with loading state -->
+            <div id="previewSection">
+                @if($previewData && $totalRecords > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">Preview Data</h3>
+                            <div class="flex items-center space-x-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    Total: {{ number_format($totalRecords) }} records
+                                </span>
+                                <span class="text-sm text-gray-600">Menampilkan 10 data pertama</span>
+                                <!-- Added refresh timestamp -->
+                                <span class="text-xs text-gray-500">
+                                    Diperbarui: {{ now()->format('H:i:s') }}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    #</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tanggal</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Shift</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Area</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Line</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Model</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Station</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Check Item</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Prod Status</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Quality Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($previewData as $index => $item)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ \Carbon\Carbon::parse($item->log->date ?? now())->format('d/m/Y') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        Shift {{ $item->log->shift ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->log->area ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->log->line ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->station }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ $item->check_item }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    @if($item->prod_status === 'OK')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">OK</span>
-                                    @elseif($item->prod_status === 'NG')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">NG</span>
-                                    @else
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">-</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    @if($item->quality_status === 'OK')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">OK</span>
-                                    @elseif($item->quality_status === 'NG')
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">NG</span>
-                                    @else
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tanggal</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Shift</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Area</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Line</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Model</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Station</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Check Item</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Prod Status</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Quality Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="previewTableBody">
+                                @foreach($previewData as $index => $item)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ \Carbon\Carbon::parse($item->log->date ?? now())->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Shift {{ $item->log->shift ?? '-' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $item->log->area ?? '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $item->log->line ?? '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->station }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ $item->check_item }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($item->prod_status === 'OK')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">OK</span>
+                                        @elseif($item->prod_status === 'NG')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">NG</span>
+                                        @else
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($item->quality_status === 'OK')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">OK</span>
+                                        @elseif($item->quality_status === 'NG')
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">NG</span>
+                                        @else
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+                @elseif(request()->hasAny(['area', 'line', 'model', 'date', 'shift']))
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-12 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada data ditemukan</h3>
+                        <p class="mt-1 text-sm text-gray-500">Tidak ada data yang sesuai dengan filter yang dipilih.</p>
+                    </div>
+                </div>
+                @endif
             </div>
-            <!-- Updated condition to check for single date instead of date range -->
-            @elseif(request()->hasAny(['area', 'line', 'model', 'date', 'shift']))
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+            <!-- Loading state for preview -->
+            <div id="loadingPreview" class="bg-white rounded-xl shadow-sm border border-gray-200 hidden">
                 <div class="p-12 text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
+                    <svg class="animate-spin mx-auto h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada data ditemukan</h3>
-                    <p class="mt-1 text-sm text-gray-500">Tidak ada data yang sesuai dengan filter yang dipilih.</p>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Memuat data preview...</h3>
+                    <p class="mt-1 text-sm text-gray-500">Mohon tunggu sebentar.</p>
                 </div>
             </div>
-            @endif
         </div>
 
         {{-- Modal --}}
@@ -311,8 +328,44 @@
         window.location.href = "{{ route('export.index') }}";
     }
 
-    // Enhanced loading state for export buttons - only if buttons exist
     document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const previewBtn = document.getElementById('previewBtn');
+        const previewSection = document.getElementById('previewSection');
+        const loadingPreview = document.getElementById('loadingPreview');
+
+        // Handle preview button loading state
+        if (filterForm && previewBtn) {
+            filterForm.addEventListener('submit', function(e) {
+                const date = document.getElementById('date').value.trim();
+                const shift = document.getElementById('shift').value.trim();
+                const area = document.getElementById('area').value.trim();
+                const line = document.getElementById('line').value.trim();
+                const model = document.getElementById('model').value.trim();
+
+                if (!date || !shift || !area || !line || !model) {
+                    e.preventDefault();
+                    openModal();
+                    return;
+                }
+
+                // Show loading state
+                previewBtn.disabled = true;
+                previewBtn.innerHTML = `
+                    <svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memuat Preview...
+                `;
+
+                // Show loading preview
+                if (previewSection) previewSection.style.display = 'none';
+                if (loadingPreview) loadingPreview.classList.remove('hidden');
+            });
+        }
+
+        // Enhanced loading state for export buttons
         const excelForm = document.getElementById('excelForm');
         const pdfForm = document.getElementById('pdfForm');
 
@@ -364,31 +417,6 @@
             });
         }
     });
-    </script>
-    <script type="text/php">
-        if (isset($pdf)) {
-        $pdf->page_script('
-            if ($PAGE_COUNT > 1) {
-                $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif", "normal");
-                $size = 10;
-                $pdf->text(750, 570, "Page $PAGE_NUM of $PAGE_COUNT", $font, $size);
-            }
-        ');
-    }
-</script>
-    <script>
-    document.getElementById('filterForm').addEventListener('submit', function(e) {
-        const date = document.getElementById('date').value.trim();
-        const shift = document.getElementById('shift').value.trim();
-        const area = document.getElementById('area').value.trim();
-        const line = document.getElementById('line').value.trim();
-        const model = document.getElementById('model').value.trim();
-
-        if (!date || !shift || !area || !line || !model) {
-            e.preventDefault();
-            openModal();
-        }
-    });
 
     function openModal() {
         document.getElementById('warningModal').classList.remove('hidden');
@@ -401,4 +429,15 @@
     }
     </script>
 
+    <script type="text/php">
+        if (isset($pdf)) {
+        $pdf->page_script('
+            if ($PAGE_COUNT > 1) {
+                $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif", "normal");
+                $size = 10;
+                $pdf->text(750, 570, "Page $PAGE_NUM of $PAGE_COUNT", $font, $size);
+            }
+        ');
+    }
+    </script>
 </x-app-layout>

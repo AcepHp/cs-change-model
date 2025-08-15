@@ -34,7 +34,6 @@ Route::middleware(['auth', 'role:quality'])->group(function () {
     Route::get('/quality/validation', [QualityValidationController::class, 'index'])->name('quality.validation.index');
     Route::get('/quality/validation/{logId}', [QualityValidationController::class, 'validate'])->name('quality.validation.form');
     Route::post('/quality/validation/save', [QualityValidationController::class, 'saveValidation'])->name('quality.validation.save');
-
 });
 
 Route::middleware('auth')->group(function () {
@@ -61,8 +60,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [ExportController::class, 'index'])->name('index');
         Route::post('/excel', [ExportController::class, 'exportExcel'])->name('excel');
         Route::post('/pdf', [ExportController::class, 'exportPdf'])->name('pdf');
+        Route::post('/preview-data', [ExportController::class, 'exportPdf'])->name('export.preview-data');
     });
-    
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {

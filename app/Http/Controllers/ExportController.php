@@ -8,12 +8,13 @@ use Carbon\Carbon;
 use App\Models\LogDetailCs;
 use App\Models\LogCs;
 use App\Models\ChangeModel;
-use App\Models\PartModel; // Added PartModel import
+use App\Models\PartModel;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ChecksheetExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ExportController extends Controller
 {
@@ -29,7 +30,7 @@ class ExportController extends Controller
             ->distinct()
             ->get()
             ->mapWithKeys(function ($item) {
-                return [$item->Model => $item->frontView]; // Map model to frontView
+                return [$item->Model => $item->frontView];
             });
         
         $title = 'Export Data Checksheet';
@@ -43,7 +44,9 @@ class ExportController extends Controller
         $totalRecords = 0;
         
         if ($request->hasAny(['area', 'line', 'model', 'date', 'shift'])) {
-            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
+            $query = LogDetailCs::with(['log' => function($query) {
+                    $query->with('partModelRelation');
+                }])
                 ->when($request->area, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -69,16 +72,85 @@ class ExportController extends Controller
                         $q->where('shift', $shift);
                     });
                 })
-                ->orderBy('created_at', 'desc');
+                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
+                ->orderBy('log_cs.date', 'desc')
+                ->orderBy('log_cs.shift', 'desc')
+                ->orderBy('log_detail_cs.created_at', 'desc')
+                ->select('log_detail_cs.*'); // Select only detail columns to avoid conflicts
 
             $totalRecords = $query->count();
-            $previewData = $query->limit(10)->get();
+            
+            if ($totalRecords > 0) {
+                $previewData = $query->limit(10)->get();
+                
+                DB::connection()->getPdo()->exec('SELECT 1'); // Simple query to ensure fresh connection
+            }
         }
 
         return view('export.index', compact(
             'areas', 'lines', 'models', 'title', 'breadcrumbs',
             'previewData', 'totalRecords'
         ));
+    }
+
+    public function getPreviewData(Request $request)
+    {
+        try {
+            $query = LogDetailCs::with(['log' => function($query) {
+                    $query->with('partModelRelation');
+                }])
+                ->when($request->area, function ($query, $area) {
+                    $query->whereHas('log', function ($q) use ($area) {
+                        $q->where('area', $area);
+                    });
+                })
+                ->when($request->line, function ($query, $line) {
+                    $query->whereHas('log', function ($q) use ($line) {
+                        $q->where('line', $line);
+                    });
+                })
+                ->when($request->model, function ($query, $model) {
+                    $query->whereHas('log', function ($q) use ($model) {
+                        $q->where('model', $model);
+                    });
+                })
+                ->when($request->date, function ($query, $date) {
+                    $query->whereHas('log', function ($q) use ($date) {
+                        $q->whereDate('date', $date);
+                    });
+                })
+                ->when($request->shift, function ($query, $shift) {
+                    $query->whereHas('log', function ($q) use ($shift) {
+                        $q->where('shift', $shift);
+                    });
+                })
+                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
+                ->orderBy('log_cs.date', 'desc')
+                ->orderBy('log_cs.shift', 'desc')
+                ->orderBy('log_detail_cs.created_at', 'desc')
+                ->select('log_detail_cs.*');
+
+            $totalRecords = $query->count();
+            $previewData = $totalRecords > 0 ? $query->limit(10)->get() : collect();
+
+            return response()->json([
+                'success' => true,
+                'totalRecords' => $totalRecords,
+                'previewData' => $previewData,
+                'hasData' => $totalRecords > 0
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Preview data fetch failed', [
+                'error' => $e->getMessage(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data preview: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function exportExcel(Request $request)
@@ -100,7 +172,9 @@ class ExportController extends Controller
             // Log the export attempt
             Log::info('Excel export started', ['filters' => $filters, 'user_id' => auth()->id()]);
 
-            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
+            $query = LogDetailCs::with(['log' => function($query) {
+                    $query->with('partModelRelation');
+                }])
                 ->when($filters['area'] ?? null, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -125,7 +199,12 @@ class ExportController extends Controller
                     $query->whereHas('log', function ($q) use ($shift) {
                         $q->where('shift', $shift);
                     });
-                });
+                })
+                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
+                ->orderBy('log_cs.date', 'asc')
+                ->orderBy('log_cs.shift', 'asc')
+                ->orderBy('log_detail_cs.list', 'asc')
+                ->select('log_detail_cs.*');
 
             $count = $query->count();
             Log::info('Data count for export', ['count' => $count]);
@@ -182,7 +261,9 @@ class ExportController extends Controller
                 return !empty($value);
             });
 
-            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
+            $query = LogDetailCs::with(['log' => function($query) {
+                    $query->with('partModelRelation');
+                }])
                 ->when($filters['area'] ?? null, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -208,17 +289,14 @@ class ExportController extends Controller
                         $q->where('shift', $shift);
                     });
                 })
-                ->orderBy(LogCs::select('date')
-                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
-                ->orderBy(LogCs::select('shift')
-                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
-                ->orderBy(LogCs::select('area')
-                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
-                ->orderBy(LogCs::select('line')
-                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
-                ->orderBy(LogCs::select('model')
-                    ->whereColumn('log_cs.id_log', 'log_detail_cs.id_log'), 'asc')
-                ->orderBy('list', 'asc');
+                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
+                ->orderBy('log_cs.date', 'asc')
+                ->orderBy('log_cs.shift', 'asc')
+                ->orderBy('log_cs.area', 'asc')
+                ->orderBy('log_cs.line', 'asc')
+                ->orderBy('log_cs.model', 'asc')
+                ->orderBy('log_detail_cs.list', 'asc')
+                ->select('log_detail_cs.*');
 
             $data = $query->get();
             $totalRecords = $data->count();
