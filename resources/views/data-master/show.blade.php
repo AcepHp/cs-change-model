@@ -24,10 +24,15 @@
                             <p class="text-gray-900 font-semibold">{{ $item->line ?? '-' }}</p>
                         </div>
 
-                        {{-- Model --}}
+                        {{-- Updated to use frontView variable from controller --}}
                         <div class="p-4 bg-gray-50 rounded-lg border hover:shadow-md transition">
                             <p class="text-sm font-medium text-gray-500">Model</p>
-                            <p class="text-gray-900 font-semibold">{{ $item->model ?? '-' }}</p>
+                            @if($frontView && Str::endsWith($frontView, ['.jpg', '.jpeg', '.png']))
+                            <img src="{{ asset('storage/' . $frontView) }}" alt="Front View"
+                                class="max-w-full md:max-w-sm rounded-lg shadow-md border mt-2">
+                            @else
+                            <p class="text-gray-900 font-semibold">{{ $frontView ?? '-' }}</p>
+                            @endif
                         </div>
 
                         {{-- List --}}

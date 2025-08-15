@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ChangeModel;
+use App\Models\PartModel;
 
 class ChangeModelController extends Controller
 {
@@ -23,19 +24,47 @@ class ChangeModelController extends Controller
 
         $dataChecksheet = $query->orderBy('id', 'desc')->paginate(10);
 
+        // Get all unique models from the current page data
+        $models = $dataChecksheet->pluck('model')->unique()->filter();
+        
+        // Get frontView data for all models at once to avoid N+1 queries
+        $frontViewData = PartModel::whereIn('Model', $models)
+            ->pluck('frontView', 'Model')
+            ->toArray();
+
+        // Add frontView to each item
+        $dataChecksheet->getCollection()->transform(function ($item) use ($frontViewData) {
+            $item->frontView = $frontViewData[$item->model] ?? $item->model;
+            return $item;
+        });
+
         $areas = ChangeModel::select('area')->distinct()->pluck('area')->filter();
         $lines = ChangeModel::select('line')->distinct()->pluck('line')->filter();
-        $models = ChangeModel::select('model')->distinct()->pluck('model')->filter();
+        
+        $modelOptions = PartModel::select('Model', 'frontView')->distinct()->get();
+
+        // Add existing log details if needed (keeping the original logic)
+        $existingLogDetails = [];
 
         return view('data-master.index', compact(
-            'dataChecksheet', 'areas', 'lines', 'models'
+            'dataChecksheet', 'areas', 'lines', 'modelOptions', 'existingLogDetails'
         ));
     }
 
     public function show($id){
         $item = ChangeModel::findOrFail($id);
-        return view('data-master.show', compact('item'));
+
+        // Ambil frontView seperti di index
+        $frontViewData = PartModel::where('Model', $item->model)
+            ->pluck('frontView', 'Model')
+            ->toArray();
+
+        $frontView = $frontViewData[$item->model] ?? $item->model;
+
+        return view('data-master.show', compact('item', 'frontView'));
     }
+
+
     
     public function create(){
         $areas = ChangeModel::select('area')->distinct()->pluck('area');
@@ -51,10 +80,10 @@ class ChangeModelController extends Controller
         })
         ->values();
 
-        $models = ChangeModel::select('model')->distinct()->pluck('model');
+        $modelOptions = PartModel::select('Model', 'frontView')->distinct()->get();
         $stations = ChangeModel::select('station')->distinct()->pluck('station');
 
-        return view('data-master.create', compact('areas', 'lines', 'models', 'stations'));
+        return view('data-master.create', compact('areas', 'lines', 'modelOptions', 'stations'));
     }
 
     public function store(Request $request)
@@ -106,10 +135,10 @@ class ChangeModelController extends Controller
             ->values();
 
         $areas = ChangeModel::select('area')->distinct()->pluck('area');
-        $models = ChangeModel::select('model')->distinct()->pluck('model');
+        $modelOptions = PartModel::select('Model', 'frontView')->distinct()->get();
         $stations = ChangeModel::select('station')->distinct()->pluck('station');
 
-        return view('data-master.edit', compact('item', 'areas', 'lines', 'models', 'stations'));
+        return view('data-master.edit', compact('item', 'areas', 'lines', 'modelOptions', 'stations'));
     }
 
     public function update(Request $request, $id)
@@ -149,7 +178,6 @@ class ChangeModelController extends Controller
 
         return redirect()->route('dataMaster.index')->with('success', 'Data berhasil diupdate.');
     }
-
 
     public function destroy($id)
     {

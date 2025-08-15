@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage; // Import Storage facade
 use Illuminate\Support\Arr;
+use App\Models\PartModel;
 
 
 class InputChecksheetController extends Controller
@@ -52,6 +53,8 @@ class InputChecksheetController extends Controller
 
         $results = $query->get();
 
+        $frontView = PartModel::where('Model', $model)->value('frontView');
+
         // Cek apakah data sudah di-submit
         $log = LogCs::where('area', $area)
             ->where('line', $line)
@@ -85,6 +88,7 @@ class InputChecksheetController extends Controller
             'area' => $area,
             'line' => $line,
             'model' => $model,
+            'frontView' => $frontView,
             'isSubmitted' => $isSubmitted,
             'id_log' => $id_log,
             'existingLogDetails' => $existingLogDetails // Pass existing details

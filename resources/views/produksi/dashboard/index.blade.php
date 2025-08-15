@@ -73,7 +73,6 @@
                 ];
                 @endphp
 
-
                 @foreach ($cards as $card)
                 <div class="p-5 rounded-xl ring-1 ring-gray-200 bg-white hover:shadow transition">
                     <div class="flex items-center justify-between">
@@ -111,7 +110,6 @@
                             </form>
                         </div>
 
-
                         <!-- Table Content -->
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -134,7 +132,7 @@
                                             Line</th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Model</th>
+                                            Front View</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -156,12 +154,13 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row->line }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $row->model }}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $row->frontView }}
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-8 text-center">
+                                        <td colspan="6" class="px-6 py-8 text-center">
                                             <div class="flex flex-col items-center">
                                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none"
                                                     stroke="currentColor" viewBox="0 0 24 24">
@@ -183,8 +182,6 @@
                                 {{ $logTableData->links() }}
                             </div>
                         </div>
-
-
                     </div>
                 </div>
 
@@ -256,12 +253,12 @@
                                 @endforeach
                             </select>
 
-                            <select id="model-filter"
+                            <select id="frontview-filter"
                                 class="min-w-[150px] h-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 <option value="">Semua Model</option>
-                                @foreach($models as $model)
-                                <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>
-                                    {{ $model }}</option>
+                                @foreach($frontViews as $frontView)
+                                <option value="{{ $frontView }}" {{ request('frontview') == $frontView ? 'selected' : '' }}>
+                                    {{ $frontView }}</option>
                                 @endforeach
                             </select>
 
@@ -287,7 +284,6 @@
                                 Reset
                             </button>
                         </div>
-
                     </div>
                 </div>
 
@@ -380,24 +376,24 @@
         function loadFilteredData() {
             const area = $('#area-filter').val();
             const line = $('#line-filter').val();
-            const model = $('#model-filter').val();
+            const frontview = $('#frontview-filter').val();
             const shift = $('#shift-filter').val();
             const date = $('#date-filter').val();
 
             $('#table-container').addClass('opacity-50 pointer-events-none');
 
             $.ajax({
-                url: "{{ route('produksi.dashboard') }}", // Ubah ke route dashboard utama
+                url: "{{ route('produksi.dashboard') }}",
                 type: 'GET',
                 data: {
                     area: area || null,
                     line: line || null,
-                    model: model || null,
+                    frontview: frontview || null,
                     shift_filter: shift || null,
                     date: date || null
                 },
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Pastikan request dikenali sebagai AJAX
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 success: function(response) {
                     $('#table-container').removeClass('opacity-50 pointer-events-none');
@@ -432,16 +428,30 @@
             });
         }
 
-        $('#area-filter, #line-filter, #model-filter, #shift-filter, #date-filter').on('change', function() {
+        $('#area-filter, #line-filter, #frontview-filter, #shift-filter, #date-filter').on('change', function() {
             clearTimeout(filterTimeout);
             filterTimeout = setTimeout(loadFilteredData, 300);
         });
 
         $('#reset-filters').on('click', function() {
-            $('#area-filter, #line-filter, #model-filter, #shift-filter').val('');
+            $('#area-filter, #line-filter, #frontview-filter, #shift-filter').val('');
             $('#date-filter').val('');
             loadFilteredData();
         });
     });
+    </script>
+    <script>
+        const imageDetailModal = document.getElementById('imageDetailModal');
+        const modalImage = document.getElementById('modalImage');
+
+        function openImageModal(imageUrl) {
+            modalImage.src = imageUrl;
+            imageDetailModal.classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            imageDetailModal.classList.add('hidden');
+            modalImage.src = ''; // Clear image source
+        }
     </script>
 </x-app-layout>

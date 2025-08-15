@@ -10,7 +10,6 @@ use App\Models\LogCs;
 use App\Models\ChangeModel;
 use App\Models\PartModel;
 
-
 class ProduksiDashboardController extends Controller
 {
     public function index(Request $request)
@@ -19,7 +18,7 @@ class ProduksiDashboardController extends Controller
         $shift = $request->get('shift');
 
         // Data untuk tabel hari ini (dengan pagination)
-        $logDetailTableData = LogDetailCs::with('log')
+        $logDetailTableData = LogDetailCs::with(['log.partModelRelation'])
             ->whereHas('log', function ($query) use ($today, $shift) {
                 $query->whereDate('date', $today);
                 if (!is_null($shift)) {
@@ -30,12 +29,14 @@ class ProduksiDashboardController extends Controller
             ->paginate(5)
             ->appends($request->query());
 
-        // Data untuk tabel log utama
-        $logTableData = LogCs::whereDate('date', $today)
+        // Data untuk tabel log utama - menggunakan frontView
+        $logTableData = LogCs::select('log_cs.*', 'pm.frontView')
+            ->leftJoin('part_model as pm', 'pm.Model', '=', 'log_cs.model')
+            ->whereDate('log_cs.date', $today)
             ->when(!is_null($shift), function ($query) use ($shift) {
-                $query->where('shift', $shift);
+                $query->where('log_cs.shift', $shift);
             })
-            ->orderBy('date', 'desc')
+            ->orderBy('log_cs.date', 'desc')
             ->paginate(5);
 
         // Statistics
@@ -44,7 +45,7 @@ class ProduksiDashboardController extends Controller
         $checksheetShift2 = LogDetailCs::whereHas('log', fn($q) => $q->whereDate('date', $today)->where('shift', 2))->count();
         $totalCSChangeModel = ChangeModel::count();
 
-        // ✅ PERBAIKAN: Ambil semua data hari ini tanpa pagination untuk akurasi perhitungan chart
+        // Ambil semua data hari ini tanpa pagination untuk akurasi perhitungan chart
         $logDetailTodayData = LogDetailCs::whereHas('log', function ($query) use ($today, $shift) {
             $query->whereDate('date', $today);
             if (!is_null($shift)) {
@@ -52,7 +53,7 @@ class ProduksiDashboardController extends Controller
             }
         })->get();
 
-        // ✅ Gunakan seluruh data untuk perhitungan OK/NG
+        // Gunakan seluruh data untuk perhitungan OK/NG
         $okCount = $logDetailTodayData->where('prod_status', 'OK')->count();
         $ngCount = $logDetailTodayData->where('prod_status', 'NG')->count();
 
@@ -72,10 +73,17 @@ class ProduksiDashboardController extends Controller
         // Filter options
         $areas = \DB::table('log_cs')->select('area')->distinct()->pluck('area');
         $lines = \DB::table('log_cs')->select('line')->distinct()->pluck('line');
-        $models = ChangeModel::select('model')->distinct()->pluck('model');
+        
+        // Ambil frontView dari tabel part_model untuk filter
+        $frontViews = \DB::table('part_model')
+            ->select('frontView')
+            ->distinct()
+            ->whereNotNull('frontView')
+            ->orderBy('frontView')
+            ->pluck('frontView');
 
         // Data untuk tabel total dengan pagination dan filter
-        $totalTableQuery = LogDetailCs::with('log')
+        $totalTableQuery = LogDetailCs::with(['log.partModelRelation'])
             ->when($request->area, function ($query, $area) {
                 $query->whereHas('log', function ($q) use ($area) {
                     $q->where('area', $area);
@@ -86,9 +94,10 @@ class ProduksiDashboardController extends Controller
                     $q->where('line', $line);
                 });
             })
-            ->when($request->model, function ($query, $model) {
-                $query->whereHas('log', function ($q) use ($model) {
-                    $q->where('model', $model);
+            // Filter berdasarkan frontView
+            ->when($request->frontview, function ($query, $frontView) {
+                $query->whereHas('log.partModelRelation', function ($q) use ($frontView) {
+                    $q->where('frontView', $frontView);
                 });
             })
             ->when($request->shift_filter, function ($query, $shift) {
@@ -103,7 +112,7 @@ class ProduksiDashboardController extends Controller
             })
             ->orderBy('created_at', 'desc');
 
-        $totalTableData = $totalTableQuery->paginate(10)->appends($request->query());
+        $totalTableData = $totalTableQuery->paginate(5)->appends($request->query());
 
         $breadcrumbs = [
             ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
@@ -122,7 +131,7 @@ class ProduksiDashboardController extends Controller
             'totalCSChangeModel', 'logDetailTableData', 'totalTableData', 'shift',
             'okCount', 'ngCount', 'qualityOkCount', 'qualityNgCount', 'qualityPendingCount',
             'totalQualityValidated', 'totalQualityOkAll', 'totalQualityNgAll', 'totalQualityValidatedToday',
-            'areas', 'lines', 'models', 'title', 'breadcrumbs', 'logTableData'
+            'areas', 'lines', 'frontViews', 'title', 'breadcrumbs', 'logTableData'
         ));
     }
 }

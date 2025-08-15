@@ -48,8 +48,11 @@
 
                             <select name="model" class="border-gray-300 rounded-md">
                                 <option value="">-- Semua Model --</option>
-                                @foreach($models as $model)
-                                <option value="{{ $model }}" @selected(request('model')==$model)>{{ $model }}</option>
+                                {{-- Tampilkan frontView untuk filter tapi value tetap Model --}}
+                                @foreach($modelOptions as $modelOption)
+                                <option value="{{ $modelOption->Model }}" @selected(request('model')==$modelOption->Model)>
+                                    {{ $modelOption->frontView }}
+                                </option>
                                 @endforeach
                             </select>
 
@@ -64,7 +67,6 @@
                                 </x-secondary-button>
                             </div>
                         </form>
-
 
                         {{-- Table --}}
                         <div class="overflow-x-auto border border-gray-200 rounded">
@@ -97,12 +99,15 @@
                                             <td class="p-3 text-center w-5">{{ $dataChecksheet->firstItem() + $i }}</td>
                                             <td class="p-3">{{ $item->area }}</td>
                                             <td class="p-3">{{ $item->line }}</td>
-                                            <td class="p-3">{{ $item->model }}</td>
+                                            {{-- Tampilkan frontView di tabel (sudah diset di controller) --}}
+                                            <td class="p-3">{{ $item->frontView }}</td>
                                             <td class="p-3">{{ $item->station }}</td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2 w-[10%]">
                                                 @if ($isImage)
-                                                <img src="{{ asset('storage/' . $item->check_item) }}" alt="Check Item Image"
-                                                    class="w-30 h-auto rounded shadow cursor-pointer" onclick="openImageModal(this.src)">
+                                                <img src="{{ asset('storage/' . $item->check_item) }}"
+                                                    alt="Check Item Image"
+                                                    class="w-30 h-auto rounded shadow cursor-pointer"
+                                                    onclick="openImageModal(this.src)">
                                                 @else
                                                 {{ $item->check_item }}
                                                 @endif
@@ -132,7 +137,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="11" class="p-3 border text-center text-gray-500">
+                                            <td colspan="8" class="p-3 border text-center text-gray-500">
                                                 Belum ada data.
                                             </td>
                                         </tr>
@@ -141,7 +146,6 @@
                                 </table>
                             </div>
                         </div>
-
 
                         {{-- Pagination --}}
                         <div class="mt-4">
@@ -177,26 +181,29 @@
         </div>
 
         {{-- Image Detail Modal --}}
-        <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+        <div id="imageDetailModal"
+            class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-auto p-4 relative">
-                <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
-                <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
+                <button onclick="closeImageModal()"
+                    class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+                <img id="modalImage" src="/placeholder.svg" alt="Detail Image"
+                    class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
             </div>
         </div>
     </div>
 
     <script>
-        const imageDetailModal = document.getElementById('imageDetailModal');
-        const modalImage = document.getElementById('modalImage');
+    const imageDetailModal = document.getElementById('imageDetailModal');
+    const modalImage = document.getElementById('modalImage');
 
-        function openImageModal(imageUrl) {
-            modalImage.src = imageUrl;
-            imageDetailModal.classList.remove('hidden');
-        }
+    function openImageModal(imageUrl) {
+        modalImage.src = imageUrl;
+        imageDetailModal.classList.remove('hidden');
+    }
 
-        function closeImageModal() {
-            imageDetailModal.classList.add('hidden');
-            modalImage.src = ''; // Clear image source
-        }
+    function closeImageModal() {
+        imageDetailModal.classList.add('hidden');
+        modalImage.src = ''; // Clear image source
+    }
     </script>
 </x-app-layout>

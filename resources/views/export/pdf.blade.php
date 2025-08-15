@@ -173,10 +173,13 @@
             @if($filters['station'] ?? null)
             <div><span class="filter-label">Station:</span> {{ $filters['station'] }}</div>
             @endif
-            <!-- Updated to show single date instead of date range -->
-            @if($filters['date'] ?? null)
-            <div><span class="filter-label">Date:</span>
-                {{ \Carbon\Carbon::parse($filters['date'])->format('d/m/Y') }}</div>
+            @if($filters['date_from'] ?? null)
+            <div><span class="filter-label">Date From:</span>
+                {{ \Carbon\Carbon::parse($filters['date_from'])->format('d/m/Y') }}</div>
+            @endif
+            @if($filters['date_to'] ?? null)
+            <div><span class="filter-label">Date To:</span>
+                {{ \Carbon\Carbon::parse($filters['date_to'])->format('d/m/Y') }}</div>
             @endif
             @if($filters['shift'] ?? null)
             <div><span class="filter-label">Shift:</span> {{ $filters['shift'] }}</div>
@@ -221,7 +224,10 @@
                 <td class="text-center">{{ $item->log->shift ?? '-' }}</td>
                 <td>{{ $item->log->area ?? '-' }}</td>
                 <td>{{ $item->log->line ?? '-' }}</td>
-                <td>{{ $item->log->model ?? '-' }}</td>
+                <td>
+                    {{-- Display frontView instead of model --}}
+                    {{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}
+                </td>
                 <td>{{ $item->station ?? '-' }}</td>
                 <td>
                     @php

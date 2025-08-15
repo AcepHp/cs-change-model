@@ -51,9 +51,11 @@
                                 <select name="model"
                                     class="form-select w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-100">
                                     <option value="">-- Pilih Model --</option>
-                                    @foreach ($models as $model)
-                                    <option value="{{ $model }}" {{ old('model') == $model ? 'selected' : '' }}>
-                                        {{ $model }}</option>
+                                    {{-- Tampilkan frontView tapi value tetap Model --}}
+                                    @foreach ($modelOptions as $modelOption)
+                                    <option value="{{ $modelOption->Model }}" {{ old('model') == $modelOption->Model ? 'selected' : '' }}>
+                                        {{ $modelOption->frontView }}
+                                    </option>
                                     @endforeach
                                 </select>
                                 @error('model') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror

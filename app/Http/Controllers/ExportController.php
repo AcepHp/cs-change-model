@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\LogDetailCs;
 use App\Models\LogCs;
 use App\Models\ChangeModel;
+use App\Models\PartModel; // Added PartModel import
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ChecksheetExport;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,7 +22,15 @@ class ExportController extends Controller
         // Get filter options
         $areas = \DB::table('log_cs')->select('area')->distinct()->whereNotNull('area')->pluck('area');
         $lines = \DB::table('log_cs')->select('line')->distinct()->whereNotNull('line')->pluck('line');
-        $models = ChangeModel::select('model')->distinct()->whereNotNull('model')->pluck('model');
+        
+        $models = PartModel::select('Model', 'frontView')
+            ->whereNotNull('frontView')
+            ->whereNotNull('Model')
+            ->distinct()
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->Model => $item->frontView]; // Map model to frontView
+            });
         
         $title = 'Export Data Checksheet';
         $breadcrumbs = [
@@ -34,7 +43,7 @@ class ExportController extends Controller
         $totalRecords = 0;
         
         if ($request->hasAny(['area', 'line', 'model', 'date', 'shift'])) {
-            $query = LogDetailCs::with('log')
+            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
                 ->when($request->area, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -91,8 +100,7 @@ class ExportController extends Controller
             // Log the export attempt
             Log::info('Excel export started', ['filters' => $filters, 'user_id' => auth()->id()]);
 
-            // Check if data exists
-            $query = LogDetailCs::with('log')
+            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
                 ->when($filters['area'] ?? null, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -174,7 +182,7 @@ class ExportController extends Controller
                 return !empty($value);
             });
 
-            $query = LogDetailCs::with('log')
+            $query = LogDetailCs::with(['log', 'log.partModelRelation'])
                 ->when($filters['area'] ?? null, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);

@@ -13,7 +13,7 @@ class PartModel extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'PartNoBaan',
+        'frontView',
         'Model'
     ];
 }

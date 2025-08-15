@@ -13,7 +13,7 @@ class CreatePartModelTable extends Migration
     {
         Schema::create('part_model', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('PartNoBaan', 50);
+            $table->string('frontView', 50);
             $table->string('Model', 50);
         });
     }

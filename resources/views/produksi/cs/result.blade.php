@@ -23,7 +23,7 @@
                         </div>
                         <div class="p-4 rounded-lg bg-gray-50 border-l-4" style="border-color: #FACC15;">
                             <small class="text-gray-500 font-medium block">Model</small>
-                            <div class="font-bold text-gray-800">{{ $model }}</div>
+                            <div class="font-bold text-gray-800">{{ $frontView }}</div>
                         </div>
                         <div class="p-4 rounded-lg bg-gray-50 border-l-4" style="border-color: #06B6D4;">
                             <small class="text-gray-500 font-medium block">Shift & Date</small>

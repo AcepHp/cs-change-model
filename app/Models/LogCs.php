@@ -30,4 +30,15 @@ class LogCs extends Model
     {
         return $this->hasMany(LogDetailCs::class, 'id_log', 'id_log');
     }
+    
+    public function partModelRelation()
+    {
+        return $this->belongsTo(PartModel::class, 'model', 'Model')
+                    ->select(['id', 'Model', 'frontView']); // Pastikan kolom yang dibutuhkan dipilih
+    }
+    
+    public function getFrontViewAttribute()
+    {
+        return $this->partModelRelation ? $this->partModelRelation->frontView : null;
+    }
 }
