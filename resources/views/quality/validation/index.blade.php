@@ -56,9 +56,10 @@
                             <select id="model" name="model"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 <option value="">-- Semua Model --</option>
-                                @foreach($models as $model)
-                                <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>
-                                    {{ $model }}</option>
+                                {{-- Updated dropdown to show frontView but use Model as value --}}
+                                @foreach($models as $modelKey => $frontView)
+                                <option value="{{ $modelKey }}" {{ request('model') == $modelKey ? 'selected' : '' }}>
+                                    {{ $frontView }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -106,7 +107,8 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $log->area }}</div>
-                                    <div class="text-sm text-gray-500">{{ $log->line }} - {{ $log->model }}</div>
+                                    {{-- Display frontView instead of model --}}
+                                    <div class="text-sm text-gray-500">{{ $log->line }} - {{ $log->partModelRelation->frontView ?? $log->model ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">Shift {{ $log->shift }}</div>

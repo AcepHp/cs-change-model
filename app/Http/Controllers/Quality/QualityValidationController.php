@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\PartModel;
 
 class QualityValidationController extends Controller
 {
@@ -21,7 +22,7 @@ class QualityValidationController extends Controller
         // Build query for LogCs
         $query = LogCs::with(['details' => function($q) {
             $q->whereNotNull('prod_status'); // Only get items that have been checked by production
-        }]);
+        }, 'partModelRelation']); // Added partModelRelation eager loading
 
         // Apply filters
         if ($request->filled('shift')) {
@@ -62,17 +63,26 @@ class QualityValidationController extends Controller
             $log->validation_percentage = $totalDetails > 0 ? round(($validatedDetails / $totalDetails) * 100, 1) : 0;
         }
 
-        // Get filter options
         $areas = LogCs::select('area')->distinct()->orderBy('area')->pluck('area');
         $lines = LogCs::select('line')->distinct()->orderBy('line')->pluck('line');
-        $models = LogCs::select('model')->distinct()->orderBy('model')->pluck('model');
+        
+        // Get models with frontView mapping for dropdown
+        $modelData = PartModel::select('Model', 'frontView')
+            ->whereNotNull('frontView')
+            ->where('frontView', '!=', '')
+            ->distinct()
+            ->orderBy('frontView')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->Model => $item->frontView];
+            });
 
         return view('quality.validation.index', [
             'title' => 'Validation Checksheet',
             'logData' => $logData,
             'areas' => $areas,
             'lines' => $lines,
-            'models' => $models,
+            'models' => $modelData, // Now contains Model => frontView mapping
             'today' => $today,
             'tomorrow' => $tomorrow,
             'filters' => $request->all()
@@ -83,7 +93,7 @@ class QualityValidationController extends Controller
     {
         $log = LogCs::with(['details' => function($q) {
             $q->whereNotNull('prod_status')->orderBy('list', 'asc');
-        }])->findOrFail($logId);
+        }, 'partModelRelation'])->findOrFail($logId); // Added partModelRelation eager loading
 
         // Check if all items are already validated
         $totalDetails = $log->details->count();
