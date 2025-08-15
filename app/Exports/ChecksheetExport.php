@@ -7,55 +7,68 @@ use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Illuminate\Support\Facades\Log;
 
-class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle, WithEvents, WithChunkReading
 {
     protected $filters;
+    protected $rowNumber = 0;
 
-    public function __construct($filters)
+    public function __construct($filters = [])
     {
         $this->filters = $filters;
     }
 
     public function query()
     {
-        return LogDetailCs::select([
-                'log_detail_cs.log_cs_id',
-                'log_detail_cs.station', 
-                'log_detail_cs.list',
-                'log_detail_cs.check_item',
-                'log_detail_cs.standard',
-                'log_detail_cs.prod_status',
-                'log_detail_cs.quality_status',
-                'log_detail_cs.created_at',
-                'log_cs.date',
-                'log_cs.shift',
-                'log_cs.area',
-                'log_cs.line',
-                'log_cs.model'
-            ])
-            ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
-            ->when($this->filters['area'] ?? null, function ($query, $area) {
-                $query->where('log_cs.area', $area);
-            })
-            ->when($this->filters['line'] ?? null, function ($query, $line) {
-                $query->where('log_cs.line', $line);
-            })
-            ->when($this->filters['model'] ?? null, function ($query, $model) {
-                $query->where('log_cs.model', $model);
-            })
-            ->when($this->filters['date'] ?? null, function ($query, $date) {
-                $query->whereDate('log_cs.date', $date);
-            })
-            ->when($this->filters['shift'] ?? null, function ($query, $shift) {
-                $query->where('log_cs.shift', $shift);
-            })
-            ->orderBy('log_detail_cs.list', 'asc');
+        try {
+            Log::info('Building Excel query with filters', $this->filters);
+            
+            return LogDetailCs::query()
+                ->with(['log' => function($query) {
+                    $query->select('id', 'date', 'shift', 'area', 'line', 'model');
+                }])
+                ->when($this->filters['area'] ?? null, function ($query, $area) {
+                    $query->whereHas('log', function ($q) use ($area) {
+                        $q->where('area', $area);
+                    });
+                })
+                ->when($this->filters['line'] ?? null, function ($query, $line) {
+                    $query->whereHas('log', function ($q) use ($line) {
+                        $q->where('line', $line);
+                    });
+                })
+                ->when($this->filters['model'] ?? null, function ($query, $model) {
+                    $query->whereHas('log', function ($q) use ($model) {
+                        $q->where('model', $model);
+                    });
+                })
+                ->when($this->filters['date'] ?? null, function ($query, $date) {
+                    $query->whereHas('log', function ($q) use ($date) {
+                        $q->whereDate('date', $date);
+                    });
+                })
+                ->when($this->filters['shift'] ?? null, function ($query, $shift) {
+                    $query->whereHas('log', function ($q) use ($shift) {
+                        $q->where('shift', $shift);
+                    });
+                })
+                ->select('id', 'log_cs_id', 'station', 'list', 'check_item', 'standard', 'prod_status', 'quality_status', 'created_at', 'updated_at')
+                ->orderBy('created_at', 'desc');
+            
+        } catch (\Exception $e) {
+            Log::error('Error in Excel query', ['error' => $e->getMessage()]);
+            throw $e;
+        }
     }
 
     public function headings(): array
@@ -73,30 +86,38 @@ class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             'Standard',
             'Prod Status',
             'Quality Status',
-            'Created At'
+            'Created At',
+            'Updated At'
         ];
     }
 
     public function map($row): array
     {
-        static $counter = 0;
-        $counter++;
-
-        return [
-            $counter,
-            \Carbon\Carbon::parse($row->date)->format('d/m/Y'),
-            $row->shift,
-            $row->area,
-            $row->line,
-            $row->model,
-            $row->station,
-            $row->list,
-            $row->check_item,
-            $row->standard,
-            $row->prod_status,
-            $row->quality_status,
-            \Carbon\Carbon::parse($row->created_at)->format('d/m/Y H:i:s')
-        ];
+        $this->rowNumber++;
+        
+        try {
+            return [
+                $this->rowNumber,
+                $row->log ? \Carbon\Carbon::parse($row->log->date)->format('d/m/Y') : '-',
+                $row->log ? ($row->log->shift ?? '-') : '-',
+                $row->log ? ($row->log->area ?? '-') : '-',
+                $row->log ? ($row->log->line ?? '-') : '-',
+                $row->log ? ($row->log->model ?? '-') : '-',
+                $row->station ?? '-',
+                $row->list ?? '-',
+                $row->check_item ?? '-',
+                $row->standard ?? '-',
+                $row->prod_status ?? '-',
+                $row->quality_status ?? 'Pending',
+                $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('d/m/Y H:i:s') : '-',
+                $row->updated_at ? \Carbon\Carbon::parse($row->updated_at)->format('d/m/Y H:i:s') : '-',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error mapping row', ['error' => $e->getMessage(), 'row_id' => $row->id ?? 'unknown']);
+            return [
+                $this->rowNumber, 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error', 'Error'
+            ];
+        }
     }
 
     public function styles(Worksheet $sheet)
@@ -106,45 +127,68 @@ class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             1 => [
                 'font' => [
                     'bold' => true,
-                    'color' => ['rgb' => 'FFFFFF']
+                    'color' => ['rgb' => 'FFFFFF'],
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4472C4']
+                    'startColor' => ['rgb' => '4F46E5'],
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical' => Alignment::VERTICAL_CENTER
-                ]
-            ],
-            // All cells border
-            'A1:M' . ($sheet->getHighestRow()) => [
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000']
-                    ]
-                ]
-            ]
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+            ],
         ];
     }
 
-    public function columnWidths(): array
+    public function title(): string
+    {
+        return 'Checksheet Data';
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000; // Process 1000 records at a time
+    }
+
+    public function registerEvents(): array
     {
         return [
-            'A' => 5,   // No
-            'B' => 12,  // Tanggal
-            'C' => 8,   // Shift
-            'D' => 10,  // Area
-            'E' => 8,   // Line
-            'F' => 20,  // Model
-            'G' => 15,  // Station
-            'H' => 8,   // List
-            'I' => 30,  // Check Item
-            'J' => 20,  // Standard
-            'K' => 12,  // Prod Status
-            'L' => 15,  // Quality Status
-            'M' => 18   // Created At
+            AfterSheet::class => function(AfterSheet $event) {
+                // Set row height for header
+                $event->sheet->getDelegate()->getRowDimension('1')->setRowHeight(25);
+                
+                // Apply borders to all data
+                $highestRow = $event->sheet->getDelegate()->getHighestRow();
+                $highestColumn = $event->sheet->getDelegate()->getHighestColumn();
+                
+                $event->sheet->getDelegate()->getStyle('A1:' . $highestColumn . $highestRow)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => 'CCCCCC'],
+                        ],
+                    ],
+                    'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+                
+                // Wrap text for long content columns
+                $event->sheet->getDelegate()->getStyle('I:J')->getAlignment()->setWrapText(true);
+                
+                // Center align specific columns
+                $event->sheet->getDelegate()->getStyle('A:A')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
+                $event->sheet->getDelegate()->getStyle('B:B')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Date
+                $event->sheet->getDelegate()->getStyle('C:C')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Shift
+                $event->sheet->getDelegate()->getStyle('K:L')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Status columns
+            },
         ];
     }
 }
