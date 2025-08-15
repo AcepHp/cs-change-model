@@ -57,8 +57,10 @@
                                                 $roleColors = [
                                                 'produksi' => 'bg-green-100 text-green-800',
                                                 'quality' => 'bg-gray-100 text-blue-800',
+                                                'admin' => 'bg-pink-100 text-pink-800',
                                                 ];
                                                 @endphp
+
                                                 <span
                                                     class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800' }}">
                                                     {{ ucfirst($user->role) }}
@@ -66,14 +68,14 @@
                                             </td>
                                             <td class="p-3">
                                                 <div class="flex justify-center gap-2">
-                                                    
+
                                                     <a href="{{ route('user.edit', $user->id) }}">
                                                         <x-primary-button
                                                             class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 me-2 text-sm">
                                                             Edit
                                                         </x-primary-button>
                                                     </a>
-                                                    
+
                                                     <x-primary-button
                                                         @click="openModal = true; deleteUrl = '{{ route('user.destroy', $user->id) }}'"
                                                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm">

@@ -10,120 +10,168 @@
         font-size: 10px;
         margin: 0;
         padding: 20px;
-        color: #000;
-        background-color: #fff;
     }
 
     .header-container {
-        border-bottom: 2px solid #000;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
+        border-bottom: 3px solid #1e40af;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        position: relative;
     }
 
     .logo-section {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+        display: table;
+        width: 100%;
+        margin-bottom: 10px;
     }
 
-    .company-info h1 {
-        font-size: 18px;
-        margin: 0;
+    .logo-left {
+        display: table-cell;
+        width: 80px;
+        vertical-align: middle;
+    }
+
+    .logo-left img {
+        width: 70px;
+        height: auto;
+    }
+
+    .company-info {
+        display: table-cell;
+        vertical-align: middle;
+        padding-left: 15px;
+    }
+
+    .company-name {
+        font-size: 20px;
         font-weight: bold;
-        color: #000;
+        color: #1e40af;
+        margin: 0;
+        letter-spacing: 0.5px;
     }
 
     .company-subtitle {
-        font-size: 10px;
-        margin-top: 2px;
+        font-size: 11px;
+        color: #666;
+        margin: 2px 0;
         font-style: italic;
-        color: #333;
     }
 
     .company-address {
         font-size: 9px;
-        color: #444;
+        color: #555;
+        margin: 5px 0 0 0;
         line-height: 1.3;
     }
 
+    .header {
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+    }
+
+    .header h1 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .header p {
+        margin: 5px 0;
+        color: #666;
+    }
+
     .filters {
-        border: 1px solid #999;
-        padding: 10px 15px;
-        margin-bottom: 15px;
+        background-color: #eef2ff;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        border-left: 5px solid #1e40af;
+        border-radius: 5px;
         font-size: 9px;
-        border-radius: 4px;
     }
 
     .filters h3 {
-        margin: 0 0 8px 0;
-        font-size: 10px;
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 4px;
+        margin: 0 0 10px 0;
+        font-size: 11px;
+        color: #1e40af;
+        font-weight: bold;
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 5px;
     }
 
     .filter-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 5px 15px;
+        gap: 10px 20px;
+    }
+
+    .filter-item {
+        color: #111827;
+        margin-bottom: 5px;
     }
 
     .filter-label {
         font-weight: bold;
-        color: #000;
+        color: #374151;
+
     }
 
     .summary {
         text-align: right;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         font-weight: bold;
+        color: #333;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 8px;
+        margin-bottom: 20px;
     }
 
     th,
     td {
-        border: 1px solid #888;
-        padding: 5px;
+        border: 1px solid #ddd;
+        padding: 6px;
+        text-align: left;
         vertical-align: top;
     }
 
     th {
-        background-color: #000;
+        background-color: #4F46E5;
         color: white;
         font-weight: bold;
         text-align: center;
+        font-size: 9px;
     }
 
-    .text-center {
-        text-align: center;
-    }
-
-    .status-ok,
-    .status-ng,
-    .status-pending {
-        font-weight: bold;
+    td {
         font-size: 8px;
-        padding: 2px 4px;
-        border: 1px solid #555;
-        border-radius: 3px;
-        display: inline-block;
     }
 
     .status-ok {
-        color: #000;
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: bold;
     }
 
     .status-ng {
-        color: #000;
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: bold;
     }
 
     .status-pending {
-        color: #000;
-        font-style: italic;
+        background-color: #fef3c7;
+        color: #92400e;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: bold;
     }
 
     .footer {
@@ -131,13 +179,21 @@
         bottom: 20px;
         right: 20px;
         font-size: 8px;
-        color: #555;
+        color: #666;
+    }
+
+    .page-break {
+        page-break-after: always;
+    }
+
+    .text-center {
+        text-align: center;
     }
 
     .no-data {
         text-align: center;
-        padding: 30px;
-        color: #555;
+        padding: 40px;
+        color: #666;
         font-style: italic;
     }
     </style>
@@ -146,8 +202,11 @@
 <body>
     <div class="header-container">
         <div class="logo-section">
+            <div class="logo-left">
+                <img src="{{ asset('assets/images/Avi.png') }}" alt="PT Astra Visteon Indonesia Logo">
+            </div>
             <div class="company-info">
-                <h1>PT ASTRA VISTEON INDONESIA</h1>
+                <h1 class="company-name">PT ASTRA VISTEON INDONESIA</h1>
                 <p class="company-subtitle">Automotive Cockpit Electronics Manufacturer</p>
                 <div class="company-address">
                     Jl. Lanbau RT 05/10 Kel. Karang Asem Barat Kec. Citeureup, Bogor, Indonesia, 16810<br>
@@ -162,38 +221,57 @@
         <h3>Applied Filters</h3>
         <div class="filter-grid">
             @if($filters['area'] ?? null)
-            <div><span class="filter-label">Area:</span> {{ $filters['area'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Area :</span> {{ $filters['area'] }}
+            </div>
             @endif
             @if($filters['line'] ?? null)
-            <div><span class="filter-label">Line:</span> {{ $filters['line'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Line :</span> {{ $filters['line'] }}
+            </div>
             @endif
             @if($filters['model'] ?? null)
-            <div><span class="filter-label">Model:</span> {{ $filters['model'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Model :</span> {{ $filters['model'] }}
+            </div>
             @endif
             @if($filters['station'] ?? null)
-            <div><span class="filter-label">Station:</span> {{ $filters['station'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Station :</span> {{ $filters['station'] }}
+            </div>
             @endif
             @if($filters['date_from'] ?? null)
-            <div><span class="filter-label">Date From:</span>
-                {{ \Carbon\Carbon::parse($filters['date_from'])->format('d/m/Y') }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Date From :</span>
+                {{ \Carbon\Carbon::parse($filters['date_from'])->format('d/m/Y') }}
+            </div>
             @endif
             @if($filters['date_to'] ?? null)
-            <div><span class="filter-label">Date To:</span>
-                {{ \Carbon\Carbon::parse($filters['date_to'])->format('d/m/Y') }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Date To :</span>
+                {{ \Carbon\Carbon::parse($filters['date_to'])->format('d/m/Y') }}
+            </div>
             @endif
             @if($filters['shift'] ?? null)
-            <div><span class="filter-label">Shift:</span> {{ $filters['shift'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Shift:</span> {{ $filters['shift'] }}
+            </div>
             @endif
             @if($filters['prod_status'] ?? null)
-            <div><span class="filter-label">Prod Status:</span> {{ $filters['prod_status'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Prod Status:</span> {{ $filters['prod_status'] }}
+            </div>
             @endif
             @if($filters['quality_status'] ?? null)
-            <div><span class="filter-label">Quality Status:</span>
-                {{ $filters['quality_status'] === 'pending' ? 'Pending' : $filters['quality_status'] }}</div>
+            <div class="filter-item">
+                <span class="filter-label">Quality Status:</span>
+                {{ $filters['quality_status'] === 'pending' ? 'Pending' : $filters['quality_status'] }}
+            </div>
             @endif
         </div>
     </div>
     @endif
+
 
     <div class="summary">
         Total Records: {{ number_format($totalRecords) }}
@@ -203,17 +281,18 @@
     <table>
         <thead>
             <tr>
-                <th>No</th>
-                <th>Tanggal</th>
-                <th>Shift</th>
-                <th>Area</th>
-                <th>Line</th>
-                <th>Model</th>
-                <th>Station</th>
-                <th>Check Item</th>
-                <th>Standard</th>
-                <th>Prod Status</th>
-                <th>Quality Status</th>
+                <th style="width: 3%;">No</th>
+                <th style="width: 8%;">Tanggal</th>
+                <th style="width: 5%;">Shift</th>
+                <th style="width: 8%;">Area</th>
+                <th style="width: 8%;">Line</th>
+                <th style="width: 10%;">Model</th>
+                <th style="width: 8%;">Station</th>
+                <th style="width: 5%;">List</th>
+                <th style="width: 20%;">Check Item</th>
+                <th style="width: 15%;">Standard</th>
+                <th style="width: 5%;">Prod Status</th>
+                <th style="width: 5%;">Quality Status</th>
             </tr>
         </thead>
         <tbody>
@@ -226,35 +305,8 @@
                 <td>{{ $item->log->line ?? '-' }}</td>
                 <td>{{ $item->log->model ?? '-' }}</td>
                 <td>{{ $item->station ?? '-' }}</td>
-                <td>
-                    @php
-                    $checkItem = $item->check_item ?? '';
-                    $imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'];
-                    $ext = strtolower(pathinfo($checkItem, PATHINFO_EXTENSION));
-                    $relativePath = 'storage/' . ltrim($checkItem, '/'); // pastikan path diawali "storage/"
-                    $fullPath = public_path($relativePath);
-                    @endphp
-
-                    @if ($checkItem && in_array($ext, $imageExtensions) && file_exists($fullPath))
-                    @php
-                    try {
-                    $imgData = base64_encode(file_get_contents($fullPath));
-                    $mime = mime_content_type($fullPath);
-                    $src = 'data:' . $mime . ';base64,' . $imgData;
-                    } catch (\Exception $e) {
-                    $src = null;
-                    }
-                    @endphp
-
-                    @if ($src)
-                    <img src="{{ $src }}" alt="Image" style="max-width: 80px; height: auto;">
-                    @else
-                    {{ $checkItem }}
-                    @endif
-                    @else
-                    {{ $checkItem ?: '-' }}
-                    @endif
-                </td>
+                <td>{{ $item->list ?? '-' }}</td>
+                <td>{{ $item->check_item ?? '-' }}</td>
                 <td>{{ $item->standard ?? '-' }}</td>
                 <td class="text-center">
                     @if($item->prod_status === 'OK')
@@ -279,9 +331,14 @@
         </tbody>
     </table>
     @else
-    <div class="no-data">No data found with the applied filters.</div>
+    <div class="no-data">
+        <p>No data found with the applied filters.</p>
+    </div>
     @endif
 
+    <div class="footer">
+        Page {PAGE_NUM} of {PAGE_COUNT}
+    </div>
 </body>
 
 </html>

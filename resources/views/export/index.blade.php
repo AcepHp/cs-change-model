@@ -53,40 +53,41 @@
                 </div>
 
                 <form method="GET" action="{{ route('export.index') }}" id="filterForm" class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        <!-- Date From -->
+                    <!-- Bagian atas: 2 kolom -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <!-- Tanggal -->
                         <div>
-                            <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
-                                Dari</label>
-                            <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <label for="date" class="block text-sm font-medium text-gray-700 mb-2">Tanggal <span
+                                    class="text-red-500">*</span></label>
+                            <input type="date" name="date" id="date" value="{{ request('date') }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
                         </div>
 
-                        <!-- Date To -->
+                        <!-- Shift -->
                         <div>
-                            <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
-                                Sampai</label>
-                            <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <!-- Shift Filter -->
-                        <div>
-                            <label for="shift" class="block text-sm font-medium text-gray-700 mb-2">Shift</label>
+                            <label for="shift" class="block text-sm font-medium text-gray-700 mb-2">Shift <span
+                                    class="text-red-500">*</span></label>
                             <select name="shift" id="shift"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Semua Shift --</option>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">-- Pilih Shift --</option>
                                 <option value="1" {{ request('shift') == '1' ? 'selected' : '' }}>Shift 1</option>
                                 <option value="2" {{ request('shift') == '2' ? 'selected' : '' }}>Shift 2</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Area Filter -->
+                    <!-- Bagian bawah: 3 kolom -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <!-- Area -->
                         <div>
-                            <label for="area" class="block text-sm font-medium text-gray-700 mb-2">Area</label>
+                            <label for="area" class="block text-sm font-medium text-gray-700 mb-2">Area <span
+                                    class="text-red-500">*</span></label>
                             <select name="area" id="area"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Semua Area --</option>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">-- Pilih Area --</option>
                                 @foreach($areas as $area)
                                 <option value="{{ $area }}" {{ request('area') == $area ? 'selected' : '' }}>{{ $area }}
                                 </option>
@@ -94,12 +95,14 @@
                             </select>
                         </div>
 
-                        <!-- Line Filter -->
+                        <!-- Line -->
                         <div>
-                            <label for="line" class="block text-sm font-medium text-gray-700 mb-2">Line</label>
+                            <label for="line" class="block text-sm font-medium text-gray-700 mb-2">Line <span
+                                    class="text-red-500">*</span></label>
                             <select name="line" id="line"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Semua Line --</option>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">-- Pilih Line --</option>
                                 @foreach($lines as $line)
                                 <option value="{{ $line }}" {{ request('line') == $line ? 'selected' : '' }}>{{ $line }}
                                 </option>
@@ -107,12 +110,14 @@
                             </select>
                         </div>
 
-                        <!-- Model Filter -->
+                        <!-- Model -->
                         <div>
-                            <label for="model" class="block text-sm font-medium text-gray-700 mb-2">Model</label>
+                            <label for="model" class="block text-sm font-medium text-gray-700 mb-2">Model <span
+                                    class="text-red-500">*</span></label>
                             <select name="model" id="model"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Semua Model --</option>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                                <option value="">-- Pilih Model --</option>
                                 @foreach($models as $model)
                                 <option value="{{ $model }}" {{ request('model') == $model ? 'selected' : '' }}>
                                     {{ $model }}</option>
@@ -121,56 +126,43 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
+                    <!-- Tombol aksi -->
                     <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
                         <div class="flex gap-2">
-                            <button type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                                    </path>
-                                </svg>
+                            <button type="submit" id="previewBtn"
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                 Preview Data
                             </button>
-
                             <button type="button" onclick="clearFilters()"
-                                class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                                    </path>
-                                </svg>
+                                class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 Reset Filter
                             </button>
                         </div>
 
-                        @if($totalRecords > 0)
+                        @if($previewData && $totalRecords > 0)
                         <div class="flex gap-2">
-                            <form method="POST" action="{{ route('export.excel') }}" class="inline" id="excelForm">
+                            <!-- Excel Export Form -->
+                            <form method="POST" action="{{ route('export.excel') }}" id="excelForm" class="inline">
                                 @csrf
-                                @foreach(request()->all() as $key => $value)
-                                @if($value && $key !== '_token')
-                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                @endif
-                                @endforeach
-                                <!-- <button type="submit" id="excelBtn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    Export Excel
-                                </button> -->
+                                <input type="hidden" name="date" value="{{ request('date') }}">
+                                <input type="hidden" name="shift" value="{{ request('shift') }}">
+                                <input type="hidden" name="area" value="{{ request('area') }}">
+                                <input type="hidden" name="line" value="{{ request('line') }}">
+                                <input type="hidden" name="model" value="{{ request('model') }}">
+
                             </form>
 
-                            <form method="POST" action="{{ route('export.pdf') }}" class="inline" id="pdfForm">
+                            <!-- PDF Export Form -->
+                            <form method="POST" action="{{ route('export.pdf') }}" id="pdfForm" class="inline">
                                 @csrf
-                                @foreach(request()->all() as $key => $value)
-                                @if($value && $key !== '_token')
-                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                @endif
-                                @endforeach
-                                <button type="submit" id="pdfBtn"
-                                    class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <input type="hidden" name="date" value="{{ request('date') }}">
+                                <input type="hidden" name="shift" value="{{ request('shift') }}">
+                                <input type="hidden" name="area" value="{{ request('area') }}">
+                                <input type="hidden" name="line" value="{{ request('line') }}">
+                                <input type="hidden" name="model" value="{{ request('model') }}">
+
+                                <button type="button" onclick="validateAndSubmitExport('pdf')" id="pdfBtn"
+                                    class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
@@ -183,6 +175,7 @@
                         @endif
                     </div>
                 </form>
+
             </div>
 
             <!-- Preview Section -->
@@ -289,7 +282,7 @@
                     </table>
                 </div>
             </div>
-            @elseif(request()->hasAny(['area', 'line', 'model', 'date_from', 'date_to', 'shift']))
+            @elseif(request()->hasAny(['area', 'line', 'model', 'date', 'shift']))
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                 <div class="p-12 text-center">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -305,14 +298,116 @@
         </div>
     </div>
 
+    <!-- Validation Modal -->
+    <div id="validationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Filter Tidak Lengkap</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Semua field filter wajib diisi sebelum melakukan export data:
+                    </p>
+                    <ul id="missingFields" class="text-sm text-red-600 mt-2 text-left list-disc list-inside">
+                        <!-- Missing fields will be populated here -->
+                    </ul>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModal"
+                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     function clearFilters() {
         window.location.href = "{{ route('export.index') }}";
     }
 
+    // Validasi semua field wajib diisi sebelum submit preview
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        const date = document.getElementById('date').value;
+        const shift = document.getElementById('shift').value;
+        const area = document.getElementById('area').value;
+        const line = document.getElementById('line').value;
+        const model = document.getElementById('model').value;
 
+        if (!date || !shift || !area || !line || !model) {
+            e.preventDefault();
+            showValidationModal('preview');
+            return false;
+        }
+    });
 
-    // Enhanced loading state for export buttons - only if buttons exist
+    // Validasi untuk export
+    function validateAndSubmitExport(type) {
+        const date = document.getElementById('date').value;
+        const shift = document.getElementById('shift').value;
+        const area = document.getElementById('area').value;
+        const line = document.getElementById('line').value;
+        const model = document.getElementById('model').value;
+
+        if (!date || !shift || !area || !line || !model) {
+            showValidationModal('export');
+            return false;
+        }
+
+        // Jika validasi berhasil, submit form yang sesuai
+        if (type === 'excel') {
+            document.getElementById('excelForm').submit();
+        } else if (type === 'pdf') {
+            document.getElementById('pdfForm').submit();
+        }
+    }
+
+    function showValidationModal(action) {
+        const date = document.getElementById('date').value;
+        const shift = document.getElementById('shift').value;
+        const area = document.getElementById('area').value;
+        const line = document.getElementById('line').value;
+        const model = document.getElementById('model').value;
+
+        const missingFields = [];
+        if (!date) missingFields.push('Tanggal');
+        if (!shift) missingFields.push('Shift');
+        if (!area) missingFields.push('Area');
+        if (!line) missingFields.push('Line');
+        if (!model) missingFields.push('Model');
+
+        const missingFieldsList = document.getElementById('missingFields');
+        missingFieldsList.innerHTML = '';
+
+        missingFields.forEach(field => {
+            const li = document.createElement('li');
+            li.textContent = field;
+            missingFieldsList.appendChild(li);
+        });
+
+        document.getElementById('validationModal').classList.remove('hidden');
+    }
+
+    // Close modal
+    document.getElementById('closeModal').addEventListener('click', function() {
+        document.getElementById('validationModal').classList.add('hidden');
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('validationModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+        }
+    });
+
+    // Enhanced loading state for export buttons
     document.addEventListener('DOMContentLoaded', function() {
         const excelForm = document.getElementById('excelForm');
         const pdfForm = document.getElementById('pdfForm');
@@ -366,16 +461,5 @@
         }
     });
     </script>
-    <script type="text/php">
-        if (isset($pdf)) {
-        $pdf->page_script('
-            if ($PAGE_COUNT > 1) {
-                $font = $fontMetrics->getFont("Arial, Helvetica, sans-serif", "normal");
-                $size = 10;
-                $pdf->text(750, 570, "Page $PAGE_NUM of $PAGE_COUNT", $font, $size);
-            }
-        ');
-    }
-</script>
 
 </x-app-layout>
