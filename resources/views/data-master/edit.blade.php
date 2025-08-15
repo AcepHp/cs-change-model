@@ -91,9 +91,12 @@
                                 <label class="block text-sm text-gray-600 mb-1">
                                     <strong>Penjelasan:</strong><br>
                                     <ul class="list-disc ml-5 text-sm mt-1 space-y-1">
-                                        <li><strong>CHECK:</strong> Saat pengisian checksheet, hanya tersedia pilihan OK atau NG (tidak ada proses scan).</li>
-                                        <li><strong>SCAN:</strong> Sistem akan memverifikasi apakah hasil scan PERSIS SAMA dengan nilai TRIGGER.</li>
-                                        <li><strong>CONTAINSCAN:</strong> Sistem akan memeriksa apakah hasil scan MENGANDUNG nilai TRIGGER di dalamnya.</li>
+                                        <li><strong>CHECK:</strong> Saat pengisian checksheet, hanya tersedia pilihan OK
+                                            atau NG (tidak ada proses scan).</li>
+                                        <li><strong>SCAN:</strong> Sistem akan memverifikasi apakah hasil scan PERSIS
+                                            SAMA dengan nilai ACTUAL VALUE.</li>
+                                        <li><strong>CONTAINSCAN:</strong> Sistem akan memeriksa apakah hasil scan
+                                            MENGANDUNG nilai ACTUAL VALUE di dalamnya.</li>
                                     </ul>
                                 </label>
 
@@ -107,7 +110,7 @@
                                 @error('actual') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
 
                                 <div class="mt-4" x-show="actual === 'scan' || actual === 'containscan'">
-                                    <label class="block font-medium text-gray-700">Trigger</label>
+                                    <label class="block font-medium text-gray-700">Actual Value</label>
                                     <input type="text" name="trigger" value="{{ old('trigger', $item->trigger) }}" class="form-input w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-100">
                                     @error('trigger') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                                 </div>

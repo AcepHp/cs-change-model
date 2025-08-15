@@ -12,7 +12,8 @@
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <form action="{{ route('dataMaster.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <form action="{{ route('dataMaster.store') }}" method="POST" enctype="multipart/form-data"
+                        class="space-y-4">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -104,10 +105,11 @@
                                         <li><strong>CHECK:</strong> Saat pengisian checksheet, hanya tersedia pilihan OK
                                             atau NG (tidak ada proses scan).</li>
                                         <li><strong>SCAN:</strong> Sistem akan memverifikasi apakah hasil scan PERSIS
-                                            SAMA dengan nilai TRIGGER.</li>
+                                            SAMA dengan nilai ACTUAL VALUE.</li>
                                         <li><strong>CONTAINSCAN:</strong> Sistem akan memeriksa apakah hasil scan
-                                            MENGANDUNG nilai TRIGGER di dalamnya.</li>
+                                            MENGANDUNG nilai ACTUAL VALUE di dalamnya.</li>
                                     </ul>
+
                                 </label>
 
                                 <label class="block font-medium text-gray-700">Actual</label>
@@ -122,7 +124,7 @@
 
                                 {{-- Trigger hanya untuk scan dan containscan --}}
                                 <div class="mt-4" x-show="actual === 'scan' || actual === 'containscan'">
-                                    <label class="block font-medium text-gray-700">Trigger</label>
+                                    <label class="block font-medium text-gray-700">Actual Value</label>
                                     <input type="text" name="trigger" value="{{ old('trigger') }}"
                                         class="form-input w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-100">
                                     @error('trigger') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror

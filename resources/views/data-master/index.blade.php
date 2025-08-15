@@ -76,28 +76,38 @@
                                             <th class="px-4 py-3">Area</th>
                                             <th class="px-4 py-3">Line</th>
                                             <th class="px-4 py-3">Model</th>
-                                            <th class="px-4 py-3">List</th>
                                             <th class="px-4 py-3">Station</th>
                                             <th class="px-4 py-3">Check Item</th>
                                             <th class="px-4 py-3">Standard</th>
-                                            <th class="px-4 py-3">Actual</th>
-                                            <th class="px-4 py-3">Trigger</th>
                                             <th class="px-4 py-3 text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($dataChecksheet as $i => $item)
+                                        @php
+                                        $extension = strtolower(pathinfo($item->check_item, PATHINFO_EXTENSION));
+                                        $isImage = in_array($extension, ['png', 'jpg', 'jpeg']);
+                                        $actualType = strtolower($item->actual);
+
+                                        // Get existing log detail for this item, if any
+                                        $logDetailKey = $item->check_item . '|' . $item->standard;
+                                        $existingDetail = $existingLogDetails[$logDetailKey] ?? null;
+                                        @endphp
                                         <tr class="border-b hover:bg-gray-50">
                                             <td class="p-3 text-center w-5">{{ $dataChecksheet->firstItem() + $i }}</td>
                                             <td class="p-3">{{ $item->area }}</td>
                                             <td class="p-3">{{ $item->line }}</td>
                                             <td class="p-3">{{ $item->model }}</td>
-                                            <td class="p-3">{{ $item->list }}</td>
                                             <td class="p-3">{{ $item->station }}</td>
-                                            <td class="p-3">{{ $item->check_item }}</td>
+                                            <td class="px-3 py-2">
+                                                @if ($isImage)
+                                                <img src="{{ asset('storage/' . $item->check_item) }}" alt="Check Item Image"
+                                                    class="w-30 h-auto rounded shadow cursor-pointer" onclick="openImageModal(this.src)">
+                                                @else
+                                                {{ $item->check_item }}
+                                                @endif
+                                            </td>
                                             <td class="p-3">{{ $item->standard }}</td>
-                                            <td class="p-3">{{ $item->actual }}</td>
-                                            <td class="p-3">{{ $item->trigger }}</td>
                                             <td class="p-3">
                                                 <div class="flex justify-center">
                                                     <a href="{{ route('dataMaster.show', $item->id) }}">
@@ -165,5 +175,28 @@
                 </div>
             </div>
         </div>
+
+        {{-- Image Detail Modal --}}
+        <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-auto p-4 relative">
+                <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+                <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
+            </div>
+        </div>
     </div>
+
+    <script>
+        const imageDetailModal = document.getElementById('imageDetailModal');
+        const modalImage = document.getElementById('modalImage');
+
+        function openImageModal(imageUrl) {
+            modalImage.src = imageUrl;
+            imageDetailModal.classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            imageDetailModal.classList.add('hidden');
+            modalImage.src = ''; // Clear image source
+        }
+    </script>
 </x-app-layout>
