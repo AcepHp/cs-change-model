@@ -21,8 +21,8 @@ class QualityValidationController extends Controller
 
         // Build query for LogCs
         $query = LogCs::with(['details' => function($q) {
-            $q->whereNotNull('prod_status'); // Only get items that have been checked by production
-        }, 'partModelRelation']); // Added partModelRelation eager loading
+            $q->whereNotNull('prod_status'); 
+        }, 'partModelRelation']); 
 
         // Apply filters
         if ($request->filled('shift')) {
@@ -82,7 +82,7 @@ class QualityValidationController extends Controller
             'logData' => $logData,
             'areas' => $areas,
             'lines' => $lines,
-            'models' => $modelData, // Now contains Model => frontView mapping
+            'models' => $modelData, 
             'today' => $today,
             'tomorrow' => $tomorrow,
             'filters' => $request->all()
@@ -93,7 +93,7 @@ class QualityValidationController extends Controller
     {
         $log = LogCs::with(['details' => function($q) {
             $q->whereNotNull('prod_status')->orderBy('list', 'asc');
-        }, 'partModelRelation'])->findOrFail($logId); // Added partModelRelation eager loading
+        }, 'partModelRelation'])->findOrFail($logId);
 
         // Check if all items are already validated
         $totalDetails = $log->details->count();
