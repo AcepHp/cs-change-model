@@ -212,8 +212,11 @@
                 <th>Station</th>
                 <th>Check Item</th>
                 <th>Standard</th>
+                <th>Result Image</th> <!-- Tambahan -->
                 <th>Prod Status</th>
+                <th>Prod Checked By</th> <!-- Tambahan -->
                 <th>Quality Status</th>
+                <th>Quality Checked By</th> <!-- Tambahan -->
             </tr>
         </thead>
         <tbody>
@@ -224,17 +227,16 @@
                 <td class="text-center">{{ $item->log->shift ?? '-' }}</td>
                 <td>{{ $item->log->area ?? '-' }}</td>
                 <td>{{ $item->log->line ?? '-' }}</td>
-                <td>
-                    {{-- Display frontView from relationship but ensure model parameter is used for filtering --}}
-                    {{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}
-                </td>
+                <td>{{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}</td>
                 <td>{{ $item->station ?? '-' }}</td>
+
+                {{-- Check Item --}}
                 <td>
                     @php
                     $checkItem = $item->check_item ?? '';
-                    $imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'];
+                    $imageExtensions = ['png','jpg','jpeg','gif','bmp','webp'];
                     $ext = strtolower(pathinfo($checkItem, PATHINFO_EXTENSION));
-                    $relativePath = 'storage/' . ltrim($checkItem, '/'); // pastikan path diawali "storage/"
+                    $relativePath = 'storage/' . ltrim($checkItem, '/');
                     $fullPath = public_path($relativePath);
                     @endphp
 
@@ -258,7 +260,37 @@
                     {{ $checkItem ?: '-' }}
                     @endif
                 </td>
+
                 <td>{{ $item->standard ?? '-' }}</td>
+
+                {{-- Result Image --}}
+                <td class="text-center">
+                    @if ($item->resultImage)
+                    @php
+                    $relativePath = 'storage/' . ltrim($item->resultImage, '/');
+                    $fullPath = public_path($relativePath);
+                    $src = null;
+                    if (file_exists($fullPath)) {
+                    try {
+                    $imgData = base64_encode(file_get_contents($fullPath));
+                    $mime = mime_content_type($fullPath);
+                    $src = 'data:' . $mime . ';base64,' . $imgData;
+                    } catch (\Exception $e) {
+                    $src = null;
+                    }
+                    }
+                    @endphp
+                    @if ($src)
+                    <img src="{{ $src }}" alt="Result" style="max-width: 80px; height: auto;">
+                    @else
+                    {{ $item->resultImage }}
+                    @endif
+                    @else
+                    -
+                    @endif
+                </td>
+
+                {{-- Prod Status --}}
                 <td class="text-center">
                     @if($item->prod_status === 'OK')
                     <span class="status-ok">OK</span>
@@ -268,6 +300,11 @@
                     -
                     @endif
                 </td>
+
+                {{-- Prod Checked By --}}
+                <td class="text-center">{{ $item->prod_checked_by ?? '-' }}</td>
+
+                {{-- Quality Status --}}
                 <td class="text-center">
                     @if($item->quality_status === 'OK')
                     <span class="status-ok">OK</span>
@@ -277,10 +314,14 @@
                     <span class="status-pending">Pending</span>
                     @endif
                 </td>
+
+                {{-- Quality Checked By --}}
+                <td class="text-center">{{ $item->quality_checked_by ?? '-' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+
     @else
     <div class="no-data">No data found with the applied filters.</div>
     @endif
