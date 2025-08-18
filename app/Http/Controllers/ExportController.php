@@ -13,37 +13,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage; // Added Storage facade import
 
 class ExportController extends Controller
 {
-    public function index(Request $request)
-    {
-        // Get filter options
-        $areas = \DB::table('log_cs')->select('area')->distinct()->whereNotNull('area')->pluck('area');
-        $lines = \DB::table('log_cs')->select('line')->distinct()->whereNotNull('line')->pluck('line');
-        
-        $models = PartModel::select('Model', 'frontView')
-            ->whereNotNull('frontView')
-            ->whereNotNull('Model')
-            ->distinct()
-            ->get()
-            ->mapWithKeys(function ($item) {
-                // Return Model as key and frontView as display value
-                return [$item->Model => $item->frontView];
-            });
-        
-        $title = 'Export Data Checksheet';
-        $breadcrumbs = [
-            ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
-            ['label' => 'Export Data', 'url' => route('export.index'), 'active' => true],
-        ];
-
-        return view('export.index', compact(
-            'areas', 'lines', 'models', 'title', 'breadcrumbs'
-        ));
-    }
-
-
 
     public function exportPdf(Request $request)
     {
@@ -101,21 +74,40 @@ class ExportController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak ada data untuk diekspor dengan filter yang dipilih.'
-                ], 404); // ubah jadi 404 agar bisa ditangkap fetch()
+                ], 404);
             }
 
+            $logoBase64 = null;
             $logoPath = public_path('assets/images/AVI.png');
-            if (!file_exists($logoPath)) {
+            if (file_exists($logoPath)) {
+                $logoData = file_get_contents($logoPath);
+                $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+            } else {
                 \Log::warning('AVI logo not found at: ' . $logoPath);
             }
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('data', 'filters', 'totalRecords'))
+            $processedData = $data->map(function ($item) {
+                // Process check_item image
+                if ($item->check_item) {
+                    $item->check_item_base64 = $this->getImageAsBase64($item->check_item);
+                }
+                
+                // Process result image
+                if ($item->resultImage) {
+                    $item->result_image_base64 = $this->getImageAsBase64($item->resultImage);
+                }
+                
+                return $item;
+            });
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
                 ->setPaper('a4', 'landscape')
                 ->setOptions([
                     'defaultFont' => 'sans-serif',
                     'isRemoteEnabled' => true,
                     'isHtml5ParserEnabled' => true,
                     'isPhpEnabled' => true,
+                    'chroot' => public_path(), // Set chroot for better file access
                 ]);
 
             $filename = 'AVI_Checksheet_Report_' . date('Y-m-d_H-i-s') . '.pdf';
@@ -135,4 +127,40 @@ class ExportController extends Controller
         }
     }
 
+    private function getImageAsBase64($imagePath)
+    {
+        try {
+            // Method 1: Try using Storage facade
+            if (Storage::disk('public')->exists($imagePath)) {
+                $file = Storage::disk('public')->get($imagePath);
+                $mimeType = Storage::disk('public')->mimeType($imagePath);
+                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+            }
+            
+            // Method 2: Try direct file path
+            $fullPath = storage_path('app/public/' . $imagePath);
+            if (file_exists($fullPath)) {
+                $file = file_get_contents($fullPath);
+                $mimeType = mime_content_type($fullPath);
+                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+            }
+            
+            // Method 3: Try public path (for images stored in public directory)
+            $publicPath = public_path('storage/' . $imagePath);
+            if (file_exists($publicPath)) {
+                $file = file_get_contents($publicPath);
+                $mimeType = mime_content_type($publicPath);
+                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+            }
+            
+            \Log::warning('Image not found: ' . $imagePath);
+            return null;
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to convert image to base64: ' . $imagePath, [
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
 }

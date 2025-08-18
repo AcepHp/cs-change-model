@@ -26,6 +26,11 @@
         gap: 15px;
     }
 
+    .logo-section img {
+        max-height: 60px;
+        width: auto;
+    }
+
     .company-info h1 {
         font-size: 18px;
         margin: 0;
@@ -140,12 +145,23 @@
         color: #555;
         font-style: italic;
     }
+
+    .image-cell img {
+        max-width: 80px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
     </style>
 </head>
 
 <body>
     <div class="header-container">
         <div class="logo-section">
+            {{-- Display logo using base64 data if available --}}
+            @if($logoBase64)
+            <img src="{{ $logoBase64 }}" alt="AVI Logo">
+            @endif
             <div class="company-info">
                 <h1>PT ASTRA VISTEON INDONESIA</h1>
                 <p class="company-subtitle">Automotive Cockpit Electronics Manufacturer</p>
@@ -199,7 +215,8 @@
         Total Records: {{ number_format($totalRecords) }}
     </div>
 
-    @if($data->count() > 0)
+    {{-- Use processedData instead of data and display pre-converted base64 images --}}
+    @if($processedData->count() > 0)
     <table>
         <thead>
             <tr>
@@ -212,15 +229,15 @@
                 <th>Station</th>
                 <th>Check Item</th>
                 <th>Standard</th>
-                <th>Result Image</th> <!-- Tambahan -->
+                <th>Result Image</th>
                 <th>Prod Status</th>
-                <th>Prod Checked By</th> <!-- Tambahan -->
+                <th>Prod Checked By</th>
                 <th>Quality Status</th>
-                <th>Quality Checked By</th> <!-- Tambahan -->
+                <th>Quality Checked By</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($data as $index => $item)
+            @foreach($processedData as $index => $item)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td class="text-center">{{ \Carbon\Carbon::parse($item->log->date ?? now())->format('d/m/Y') }}</td>
@@ -230,44 +247,25 @@
                 <td>{{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}</td>
                 <td>{{ $item->station ?? '-' }}</td>
 
-                {{-- Check Item --}}
-                <td>
-                    @php
-                        $src = null;
-                        if ($item->check_item && Storage::disk('public')->exists($item->check_item)) {
-                            $file = Storage::disk('public')->get($item->check_item);
-                            $mime = Storage::disk('public')->mimeType($item->check_item);
-                            $src = 'data:' . $mime . ';base64,' . base64_encode($file);
-                        }
-                    @endphp
-
-                    @if ($src)
-                        <img src="{{ $src }}" alt="Check Item" style="max-width: 80px; height: auto;">
+                {{-- Use pre-converted base64 image data --}}
+                <td class="image-cell">
+                    @if($item->check_item_base64)
+                    <img src="{{ $item->check_item_base64 }}" alt="Check Item">
                     @else
-                        {{ $item->check_item ?: '-' }}
+                    {{ $item->check_item ?: '-' }}
                     @endif
                 </td>
 
                 <td>{{ $item->standard ?? '-' }}</td>
 
-                {{-- Result Image --}}
-                <td class="text-center">
-                    @php
-                        $src = null;
-                        if ($item->resultImage && Storage::disk('public')->exists($item->resultImage)) {
-                            $file = Storage::disk('public')->get($item->resultImage);
-                            $mime = Storage::disk('public')->mimeType($item->resultImage);
-                            $src = 'data:' . $mime . ';base64,' . base64_encode($file);
-                        }
-                    @endphp
-
-                    @if ($src)
-                        <img src="{{ $src }}" alt="Result" style="max-width: 80px; height: auto;">
+                {{-- Use pre-converted base64 image data --}}
+                <td class="image-cell">
+                    @if($item->result_image_base64)
+                    <img src="{{ $item->result_image_base64 }}" alt="Result">
                     @else
-                        -
+                    -
                     @endif
                 </td>
-
 
                 {{-- Prod Status --}}
                 <td class="text-center">
