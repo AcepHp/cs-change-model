@@ -125,6 +125,8 @@ class ExportController extends Controller
                 return $item;
             });
 
+            dd($processedData->first());
+
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
                 ->setPaper('a4', 'landscape')
                 ->setOptions([
@@ -155,8 +157,11 @@ class ExportController extends Controller
     private function getImageAsBase64($imagePath)
     {
         try {
+            // Hapus "storage/" di depan kalau ada
+            $normalizedPath = preg_replace('/^storage\//', '', ltrim($imagePath, '/'));
+
             // Full path di public/storage/
-            $publicPath = public_path('storage/' . ltrim($imagePath, '/'));
+            $publicPath = public_path('storage/' . $normalizedPath);
             if (file_exists($publicPath)) {
                 $file = file_get_contents($publicPath);
                 $mimeType = mime_content_type($publicPath);
@@ -164,21 +169,27 @@ class ExportController extends Controller
             }
 
             // Fallback ke Storage facade
-            if (Storage::disk('public')->exists($imagePath)) {
-                $file = Storage::disk('public')->get($imagePath);
-                $mimeType = Storage::disk('public')->mimeType($imagePath);
+            if (Storage::disk('public')->exists($normalizedPath)) {
+                $file = Storage::disk('public')->get($normalizedPath);
+                $mimeType = Storage::disk('public')->mimeType($normalizedPath);
                 return 'data:' . $mimeType . ';base64,' . base64_encode($file);
             }
 
-            \Log::warning('Image not found: ' . $imagePath);
+            \Log::warning('Image not found', [
+                'original' => $imagePath,
+                'normalized' => $normalizedPath,
+                'publicPath' => $publicPath
+            ]);
             return null;
 
         } catch (\Exception $e) {
-            \Log::error('Failed to convert image to base64: ' . $imagePath, [
+            \Log::error('Failed to convert image to base64', [
+                'path' => $imagePath,
                 'error' => $e->getMessage()
             ]);
             return null;
         }
     }
+
 
 }
