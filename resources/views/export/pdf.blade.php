@@ -225,7 +225,7 @@
                 <td>{{ $item->log->area ?? '-' }}</td>
                 <td>{{ $item->log->line ?? '-' }}</td>
                 <td>
-                    {{-- Display frontView instead of model --}}
+                    {{-- Display frontView from relationship but ensure model parameter is used for filtering --}}
                     {{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}
                 </td>
                 <td>{{ $item->station ?? '-' }}</td>

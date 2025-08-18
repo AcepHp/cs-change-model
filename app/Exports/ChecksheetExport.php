@@ -36,7 +36,7 @@ class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             return LogDetailCs::query()
                 ->with(['log' => function($query) {
                     $query->select('id', 'date', 'shift', 'area', 'line', 'model');
-                }, 'log.partModelRelation'])
+                }])
                 ->when($this->filters['area'] ?? null, function ($query, $area) {
                     $query->whereHas('log', function ($q) use ($area) {
                         $q->where('area', $area);
@@ -52,9 +52,14 @@ class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyl
                         $q->where('model', $model);
                     });
                 })
-                ->when($this->filters['date'] ?? null, function ($query, $date) {
+                ->when($this->filters['date_from'] ?? null, function ($query, $date) {
                     $query->whereHas('log', function ($q) use ($date) {
-                        $q->whereDate('date', $date);
+                        $q->whereDate('date', '>=', $date);
+                    });
+                })
+                ->when($this->filters['date_to'] ?? null, function ($query, $date) {
+                    $query->whereHas('log', function ($q) use ($date) {
+                        $q->whereDate('date', '<=', $date);
                     });
                 })
                 ->when($this->filters['shift'] ?? null, function ($query, $shift) {
@@ -102,7 +107,7 @@ class ChecksheetExport implements FromQuery, WithHeadings, WithMapping, WithStyl
                 $row->log ? ($row->log->shift ?? '-') : '-',
                 $row->log ? ($row->log->area ?? '-') : '-',
                 $row->log ? ($row->log->line ?? '-') : '-',
-                $row->log ? ($row->log->partModelRelation->frontView ?? $row->log->model ?? '-') : '-',
+                $row->log ? ($row->log->model ?? '-') : '-',
                 $row->station ?? '-',
                 $row->list ?? '-',
                 $row->check_item ?? '-',

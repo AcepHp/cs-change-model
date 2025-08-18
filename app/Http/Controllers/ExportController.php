@@ -9,8 +9,6 @@ use App\Models\LogDetailCs;
 use App\Models\LogCs;
 use App\Models\ChangeModel;
 use App\Models\PartModel;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ChecksheetExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +28,7 @@ class ExportController extends Controller
             ->distinct()
             ->get()
             ->mapWithKeys(function ($item) {
+                // Return Model as key and frontView as display value
                 return [$item->Model => $item->frontView];
             });
         
@@ -39,215 +38,12 @@ class ExportController extends Controller
             ['label' => 'Export Data', 'url' => route('export.index'), 'active' => true],
         ];
 
-        // Get preview data if filters are applied
-        $previewData = null;
-        $totalRecords = 0;
-        
-        if ($request->hasAny(['area', 'line', 'model', 'date', 'shift'])) {
-            $query = LogDetailCs::with(['log' => function($query) {
-                    $query->with('partModelRelation');
-                }])
-                ->when($request->area, function ($query, $area) {
-                    $query->whereHas('log', function ($q) use ($area) {
-                        $q->where('area', $area);
-                    });
-                })
-                ->when($request->line, function ($query, $line) {
-                    $query->whereHas('log', function ($q) use ($line) {
-                        $q->where('line', $line);
-                    });
-                })
-                ->when($request->model, function ($query, $model) {
-                    $query->whereHas('log', function ($q) use ($model) {
-                        $q->where('model', $model);
-                    });
-                })
-                ->when($request->date, function ($query, $date) {
-                    $query->whereHas('log', function ($q) use ($date) {
-                        $q->whereDate('date', $date);
-                    });
-                })
-                ->when($request->shift, function ($query, $shift) {
-                    $query->whereHas('log', function ($q) use ($shift) {
-                        $q->where('shift', $shift);
-                    });
-                })
-                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
-                ->orderBy('log_cs.date', 'desc')
-                ->orderBy('log_cs.shift', 'desc')
-                ->orderBy('log_detail_cs.created_at', 'desc')
-                ->select('log_detail_cs.*'); // Select only detail columns to avoid conflicts
-
-            $totalRecords = $query->count();
-            
-            if ($totalRecords > 0) {
-                $previewData = $query->limit(10)->get();
-                
-                DB::connection()->getPdo()->exec('SELECT 1'); // Simple query to ensure fresh connection
-            }
-        }
-
         return view('export.index', compact(
-            'areas', 'lines', 'models', 'title', 'breadcrumbs',
-            'previewData', 'totalRecords'
+            'areas', 'lines', 'models', 'title', 'breadcrumbs'
         ));
     }
 
-    public function getPreviewData(Request $request)
-    {
-        try {
-            $query = LogDetailCs::with(['log' => function($query) {
-                    $query->with('partModelRelation');
-                }])
-                ->when($request->area, function ($query, $area) {
-                    $query->whereHas('log', function ($q) use ($area) {
-                        $q->where('area', $area);
-                    });
-                })
-                ->when($request->line, function ($query, $line) {
-                    $query->whereHas('log', function ($q) use ($line) {
-                        $q->where('line', $line);
-                    });
-                })
-                ->when($request->model, function ($query, $model) {
-                    $query->whereHas('log', function ($q) use ($model) {
-                        $q->where('model', $model);
-                    });
-                })
-                ->when($request->date, function ($query, $date) {
-                    $query->whereHas('log', function ($q) use ($date) {
-                        $q->whereDate('date', $date);
-                    });
-                })
-                ->when($request->shift, function ($query, $shift) {
-                    $query->whereHas('log', function ($q) use ($shift) {
-                        $q->where('shift', $shift);
-                    });
-                })
-                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
-                ->orderBy('log_cs.date', 'desc')
-                ->orderBy('log_cs.shift', 'desc')
-                ->orderBy('log_detail_cs.created_at', 'desc')
-                ->select('log_detail_cs.*');
 
-            $totalRecords = $query->count();
-            $previewData = $totalRecords > 0 ? $query->limit(10)->get() : collect();
-
-            return response()->json([
-                'success' => true,
-                'totalRecords' => $totalRecords,
-                'previewData' => $previewData,
-                'hasData' => $totalRecords > 0
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Preview data fetch failed', [
-                'error' => $e->getMessage(),
-                'filters' => $request->all()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data preview: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function exportExcel(Request $request)
-    {
-        try {
-            // Set memory limit and execution time for large exports
-            ini_set('memory_limit', '512M');
-            set_time_limit(300); // 5 minutes
-
-            $filters = $request->only([
-                'area', 'line', 'model', 'date', 'shift'
-            ]);
-
-            // Remove empty filters
-            $filters = array_filter($filters, function($value) {
-                return !empty($value);
-            });
-
-            // Log the export attempt
-            Log::info('Excel export started', ['filters' => $filters, 'user_id' => auth()->id()]);
-
-            $query = LogDetailCs::with(['log' => function($query) {
-                    $query->with('partModelRelation');
-                }])
-                ->when($filters['area'] ?? null, function ($query, $area) {
-                    $query->whereHas('log', function ($q) use ($area) {
-                        $q->where('area', $area);
-                    });
-                })
-                ->when($filters['line'] ?? null, function ($query, $line) {
-                    $query->whereHas('log', function ($q) use ($line) {
-                        $q->where('line', $line);
-                    });
-                })
-                ->when($filters['model'] ?? null, function ($query, $model) {
-                    $query->whereHas('log', function ($q) use ($model) {
-                        $q->where('model', $model);
-                    });
-                })
-                ->when($filters['date'] ?? null, function ($query, $date) {
-                    $query->whereHas('log', function ($q) use ($date) {
-                        $q->whereDate('date', $date);
-                    });
-                })
-                ->when($filters['shift'] ?? null, function ($query, $shift) {
-                    $query->whereHas('log', function ($q) use ($shift) {
-                        $q->where('shift', $shift);
-                    });
-                })
-                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
-                ->orderBy('log_cs.date', 'asc')
-                ->orderBy('log_cs.shift', 'asc')
-                ->orderBy('log_detail_cs.list', 'asc')
-                ->select('log_detail_cs.*');
-
-            $count = $query->count();
-            Log::info('Data count for export', ['count' => $count]);
-
-            if ($count == 0) {
-                return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
-            }
-
-            // Generate filename with timestamp
-            $timestamp = date('Y-m-d_H-i-s');
-            $filename = "AVI_Checksheet_Data_{$timestamp}.xlsx";
-            
-            Log::info('Starting Excel download', ['filename' => $filename, 'record_count' => $count]);
-            
-            // Create and download Excel file
-            return Excel::download(new ChecksheetExport($filters), $filename);
-
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            Log::error('Excel validation failed', [
-                'error' => $e->getMessage(),
-                'failures' => $e->failures()
-            ]);
-            
-            return back()->with('error', 'Validasi data gagal: ' . $e->getMessage());
-            
-        } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-            Log::error('PhpSpreadsheet error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()->with('error', 'Error dalam pembuatan file Excel: ' . $e->getMessage());
-            
-        } catch (Exception $e) {
-            Log::error('Excel export failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'filters' => $filters ?? []
-            ]);
-            
-            return back()->with('error', 'Gagal mengekspor data Excel: ' . $e->getMessage());
-        }
-    }
 
     public function exportPdf(Request $request)
     {
@@ -302,48 +98,41 @@ class ExportController extends Controller
             $totalRecords = $data->count();
 
             if ($totalRecords == 0) {
-                return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data untuk diekspor dengan filter yang dipilih.'
+                ], 404); // ubah jadi 404 agar bisa ditangkap fetch()
             }
 
-            // Check if logo exists, if not create a placeholder
             $logoPath = public_path('assets/images/AVI.png');
             if (!file_exists($logoPath)) {
-                // Create images directory if it doesn't exist
-                if (!file_exists(public_path('images'))) {
-                    mkdir(public_path('images'), 0755, true);
-                }
-                
-                // You can either copy an actual logo here or create a simple placeholder
-                Log::warning('AVI logo not found at: ' . $logoPath);
+                \Log::warning('AVI logo not found at: ' . $logoPath);
             }
 
-            $pdf = Pdf::loadView('export.pdf', compact('data', 'filters', 'totalRecords'))
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('data', 'filters', 'totalRecords'))
                 ->setPaper('a4', 'landscape')
                 ->setOptions([
                     'defaultFont' => 'sans-serif',
                     'isRemoteEnabled' => true,
                     'isHtml5ParserEnabled' => true,
                     'isPhpEnabled' => true,
-                    'debugKeepTemp' => false,
-                    'debugCss' => false,
-                    'debugLayout' => false,
-                    'debugLayoutLines' => false,
-                    'debugLayoutBlocks' => false,
-                    'debugLayoutInline' => false,
-                    'debugLayoutPaddingBox' => false,
                 ]);
 
             $filename = 'AVI_Checksheet_Report_' . date('Y-m-d_H-i-s') . '.pdf';
             
             return $pdf->download($filename);
 
-        } catch (Exception $e) {
-            Log::error('PDF export failed', [
+        } catch (\Exception $e) {
+            \Log::error('PDF export failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return back()->with('error', 'Gagal mengekspor PDF: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengekspor PDF: ' . $e->getMessage()
+            ], 500);
         }
     }
+
 }
