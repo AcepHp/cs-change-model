@@ -153,14 +153,15 @@ class InputChecksheetController extends Controller
                 if ($base64Image) {
                     $decodedImage = base64_decode($base64Image);
 
+                    // Nama file
                     $fileName = 'checksheet_image_' . uniqid() . '.jpeg';
                     $filePath = 'checksheet-image/' . $fileName;
 
                     // Simpan ke storage/app/public/checksheet-image/
                     Storage::disk('public')->put($filePath, $decodedImage);
 
-                    // Buat URL publik (untuk <img src="...">)
-                    $uploadedImagePath = asset('storage/' . $filePath);
+                    // Simpan path relatif ke database
+                    $uploadedImagePath = $filePath;
 
                     Log::info('Image uploaded for specific item:', [
                         'path' => $uploadedImagePath,
@@ -170,6 +171,7 @@ class InputChecksheetController extends Controller
                     Log::warning('Base64 image data invalid or missing.');
                 }
             }
+
 
             // Get checksheet item (the one that triggered the save)
             $checksheetItem = ChangeModel::find($validated['item_id']);

@@ -161,9 +161,13 @@
                                             </button>
                                             <div class="image-preview mt-2" id="imagePreview-{{ $item->id }}">
                                                 @if($existingDetail && $existingDetail->resultImage)
-                                                    <img src="{{ asset($existingDetail->resultImage) }}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">
+                                                    <img src="{{ asset('storage/' . $existingDetail->resultImage) }}"
+                                                        alt="Uploaded Image"
+                                                        class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer"
+                                                        onclick="openImageModal(this.src)">
                                                 @endif
                                             </div>
+
                                         @else
                                             <span class="text-gray-500 italic">-</span>
                                         @endif
@@ -453,7 +457,7 @@
     <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-auto p-4 relative">
             <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
-            <img id="modalImage" src="/placeholder.svg" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
+            <img id="modalImage" src="/" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
         </div>
     </div>
 
@@ -1067,7 +1071,10 @@
                     if (data.data.image_url) {
                         const imagePreviewDiv = document.getElementById(`imagePreview-${itemId}`);
                         if (imagePreviewDiv) {
-                            imagePreviewDiv.innerHTML = `<img src="${data.data.image_url}" alt="Uploaded Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">`;
+                            imagePreviewDiv.innerHTML = `<img src="/storage/${data.data.image_url}" 
+                            alt="Uploaded Image" 
+                            class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" 
+                            onclick="openImageModal(this.src)">`;
                         }
                     }
 
