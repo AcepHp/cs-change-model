@@ -125,8 +125,6 @@ class ExportController extends Controller
                 return $item;
             });
 
-            dd($processedData->first());
-
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
                 ->setPaper('a4', 'landscape')
                 ->setOptions([
