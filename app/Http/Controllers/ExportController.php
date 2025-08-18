@@ -155,32 +155,24 @@ class ExportController extends Controller
     private function getImageAsBase64($imagePath)
     {
         try {
-            // Method 1: Try using Storage facade
-            if (Storage::disk('public')->exists($imagePath)) {
-                $file = Storage::disk('public')->get($imagePath);
-                $mimeType = Storage::disk('public')->mimeType($imagePath);
-                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
-            }
-            
-            // Method 2: Try direct file path
-            $fullPath = storage_path('app/public/' . $imagePath);
-            if (file_exists($fullPath)) {
-                $file = file_get_contents($fullPath);
-                $mimeType = mime_content_type($fullPath);
-                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
-            }
-            
-            // Method 3: Try public path (for images stored in public directory)
-            $publicPath = public_path('storage/' . $imagePath);
+            // Full path di public/storage/
+            $publicPath = public_path('storage/' . ltrim($imagePath, '/'));
             if (file_exists($publicPath)) {
                 $file = file_get_contents($publicPath);
                 $mimeType = mime_content_type($publicPath);
                 return 'data:' . $mimeType . ';base64,' . base64_encode($file);
             }
-            
+
+            // Fallback ke Storage facade
+            if (Storage::disk('public')->exists($imagePath)) {
+                $file = Storage::disk('public')->get($imagePath);
+                $mimeType = Storage::disk('public')->mimeType($imagePath);
+                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+            }
+
             \Log::warning('Image not found: ' . $imagePath);
             return null;
-            
+
         } catch (\Exception $e) {
             \Log::error('Failed to convert image to base64: ' . $imagePath, [
                 'error' => $e->getMessage()
@@ -188,4 +180,5 @@ class ExportController extends Controller
             return null;
         }
     }
+
 }
