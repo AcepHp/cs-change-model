@@ -17,7 +17,32 @@ use Illuminate\Support\Facades\Storage; // Added Storage facade import
 
 class ExportController extends Controller
 {
+    public function index(Request $request)
+    {
+        // Get filter options
+        $areas = \DB::table('log_cs')->select('area')->distinct()->whereNotNull('area')->pluck('area');
+        $lines = \DB::table('log_cs')->select('line')->distinct()->whereNotNull('line')->pluck('line');
+        
+        $models = PartModel::select('Model', 'frontView')
+            ->whereNotNull('frontView')
+            ->whereNotNull('Model')
+            ->distinct()
+            ->get()
+            ->mapWithKeys(function ($item) {
+                // Return Model as key and frontView as display value
+                return [$item->Model => $item->frontView];
+            });
+        
+        $title = 'Export Data Checksheet';
+        $breadcrumbs = [
+            ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
+            ['label' => 'Export Data', 'url' => route('export.index'), 'active' => true],
+        ];
 
+        return view('export.index', compact(
+            'areas', 'lines', 'models', 'title', 'breadcrumbs'
+        ));
+    }
     public function exportPdf(Request $request)
     {
         try {
