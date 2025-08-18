@@ -233,31 +233,18 @@
                 {{-- Check Item --}}
                 <td>
                     @php
-                    $checkItem = $item->check_item ?? '';
-                    $imageExtensions = ['png','jpg','jpeg','gif','bmp','webp'];
-                    $ext = strtolower(pathinfo($checkItem, PATHINFO_EXTENSION));
-                    $relativePath = 'storage/' . ltrim($checkItem, '/');
-                    $fullPath = public_path($relativePath);
-                    @endphp
-
-                    @if ($checkItem && in_array($ext, $imageExtensions) && file_exists($fullPath))
-                    @php
-                    try {
-                    $imgData = base64_encode(file_get_contents($fullPath));
-                    $mime = mime_content_type($fullPath);
-                    $src = 'data:' . $mime . ';base64,' . $imgData;
-                    } catch (\Exception $e) {
-                    $src = null;
-                    }
+                        $src = null;
+                        if ($item->check_item && Storage::disk('public')->exists($item->check_item)) {
+                            $file = Storage::disk('public')->get($item->check_item);
+                            $mime = Storage::disk('public')->mimeType($item->check_item);
+                            $src = 'data:' . $mime . ';base64,' . base64_encode($file);
+                        }
                     @endphp
 
                     @if ($src)
-                    <img src="{{ $src }}" alt="Image" style="max-width: 80px; height: auto;">
+                        <img src="{{ $src }}" alt="Check Item" style="max-width: 80px; height: auto;">
                     @else
-                    {{ $checkItem }}
-                    @endif
-                    @else
-                    {{ $checkItem ?: '-' }}
+                        {{ $item->check_item ?: '-' }}
                     @endif
                 </td>
 
@@ -265,30 +252,22 @@
 
                 {{-- Result Image --}}
                 <td class="text-center">
-                    @if ($item->resultImage)
                     @php
-                    $relativePath = 'storage/' . ltrim($item->resultImage, '/');
-                    $fullPath = public_path($relativePath);
-                    $src = null;
-                    if (file_exists($fullPath)) {
-                    try {
-                    $imgData = base64_encode(file_get_contents($fullPath));
-                    $mime = mime_content_type($fullPath);
-                    $src = 'data:' . $mime . ';base64,' . $imgData;
-                    } catch (\Exception $e) {
-                    $src = null;
-                    }
-                    }
+                        $src = null;
+                        if ($item->resultImage && Storage::disk('public')->exists($item->resultImage)) {
+                            $file = Storage::disk('public')->get($item->resultImage);
+                            $mime = Storage::disk('public')->mimeType($item->resultImage);
+                            $src = 'data:' . $mime . ';base64,' . base64_encode($file);
+                        }
                     @endphp
+
                     @if ($src)
-                    <img src="{{ $src }}" alt="Result" style="max-width: 80px; height: auto;">
+                        <img src="{{ $src }}" alt="Result" style="max-width: 80px; height: auto;">
                     @else
-                    {{ $item->resultImage }}
-                    @endif
-                    @else
-                    -
+                        -
                     @endif
                 </td>
+
 
                 {{-- Prod Status --}}
                 <td class="text-center">
