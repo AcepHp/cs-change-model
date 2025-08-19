@@ -48,8 +48,7 @@
                         :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                         {{ __('Management User') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('dataMaster.index')"
-                        :active="request()->routeIs('dataMaster.*')">
+                    <x-nav-link :href="route('dataMaster.index')" :active="request()->routeIs('dataMaster.*')">
                         {{ __('Data Master') }}
                     </x-nav-link>
                     <x-nav-link :href="route('export.index')"
@@ -120,30 +119,39 @@
 
             @if ($user->role === 'produksi')
             <x-responsive-nav-link :href="route('produksi.inputChecksheet.index')"
-                :active="request()->routeIs('produksi.inputChecksheet.*')">
-                {{ __('InputChecksheet') }}
+                :active="request()->routeIs('produksi.inputChecksheet.index') || request()->routeIs('produksi.inputChecksheet.*')">
+                {{ __('Input Checksheet') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('managementUser')"
-                :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
-                {{ __('Management User') }}
+            <x-responsive-nav-link :href="route('export.index')"
+                :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                {{ __('Export Data') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('dataMaster.index')"
-                :active="request()->routeIs('dataMaster.*')">
-                {{ __('Data Master') }}
-            </x-responsive-nav-link>
-            
 
             @elseif ($user->role === 'quality')
+            <x-responsive-nav-link :href="route('quality.validation.index')"
+                :active="request()->routeIs('quality.validation.index') || request()->routeIs('quality.validation.*')">
+                {{ __('Validasi Checksheet') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('export.index')"
+                :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                {{ __('Export Data') }}
+            </x-responsive-nav-link>
+
+            @elseif ($user->role === 'admin')
             <x-responsive-nav-link :href="route('managementUser')"
                 :active="request()->routeIs('managementUser') || request()->routeIs('user.*')">
                 {{ __('Management User') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('dataMaster.index')"
-                :active="request()->routeIs('dataMaster.*')">
+            <x-responsive-nav-link :href="route('dataMaster.index')" :active="request()->routeIs('dataMaster.*')">
                 {{ __('Data Master') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('export.index')"
+                :active="request()->routeIs('export.index') || request()->routeIs('export.*')">
+                {{ __('Export Data') }}
             </x-responsive-nav-link>
             @endif
         </div>
+
 
         <!-- User Info and Logout -->
         <div class="pt-4 pb-1 border-t border-gray-200">
