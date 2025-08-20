@@ -13,13 +13,12 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage; // Added Storage facade import
+use Illuminate\Support\Facades\Storage;
 
 class ExportController extends Controller
 {
     public function index(Request $request)
     {
-        // Get filter options
         $areas = \DB::table('log_cs')->select('area')->distinct()->whereNotNull('area')->pluck('area');
         $lines = \DB::table('log_cs')->select('line')->distinct()->whereNotNull('line')->pluck('line');
         
@@ -29,7 +28,6 @@ class ExportController extends Controller
             ->distinct()
             ->get()
             ->mapWithKeys(function ($item) {
-                // Return Model as key and frontView as display value
                 return [$item->Model => $item->frontView];
             });
         
@@ -43,6 +41,7 @@ class ExportController extends Controller
             'areas', 'lines', 'models', 'title', 'breadcrumbs'
         ));
     }
+
     public function exportPdf(Request $request)
     {
         try {
@@ -50,39 +49,21 @@ class ExportController extends Controller
                 'area', 'line', 'model', 'date', 'shift'
             ]);
 
-            // Remove empty filters
-            $filters = array_filter($filters, function($value) {
-                return !empty($value);
-            });
+            $filters = array_filter($filters, fn($value) => !empty($value));
 
             $query = LogDetailCs::with(['log' => function($query) {
                     $query->with('partModelRelation');
                 }])
-                ->when($filters['area'] ?? null, function ($query, $area) {
-                    $query->whereHas('log', function ($q) use ($area) {
-                        $q->where('area', $area);
-                    });
-                })
-                ->when($filters['line'] ?? null, function ($query, $line) {
-                    $query->whereHas('log', function ($q) use ($line) {
-                        $q->where('line', $line);
-                    });
-                })
-                ->when($filters['model'] ?? null, function ($query, $model) {
-                    $query->whereHas('log', function ($q) use ($model) {
-                        $q->where('model', $model);
-                    });
-                })
-                ->when($filters['date'] ?? null, function ($query, $date) {
-                    $query->whereHas('log', function ($q) use ($date) {
-                        $q->whereDate('date', $date);
-                    });
-                })
-                ->when($filters['shift'] ?? null, function ($query, $shift) {
-                    $query->whereHas('log', function ($q) use ($shift) {
-                        $q->where('shift', $shift);
-                    });
-                })
+                ->when($filters['area'] ?? null, fn($query, $area) =>
+                    $query->whereHas('log', fn($q) => $q->where('area', $area)))
+                ->when($filters['line'] ?? null, fn($query, $line) =>
+                    $query->whereHas('log', fn($q) => $q->where('line', $line)))
+                ->when($filters['model'] ?? null, fn($query, $model) =>
+                    $query->whereHas('log', fn($q) => $q->where('model', $model)))
+                ->when($filters['date'] ?? null, fn($query, $date) =>
+                    $query->whereHas('log', fn($q) => $q->whereDate('date', $date)))
+                ->when($filters['shift'] ?? null, fn($query, $shift) =>
+                    $query->whereHas('log', fn($q) => $q->where('shift', $shift)))
                 ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
                 ->orderBy('log_cs.date', 'asc')
                 ->orderBy('log_cs.shift', 'asc')
@@ -102,41 +83,39 @@ class ExportController extends Controller
                 ], 404);
             }
 
+            // Logo perusahaan
             $logoBase64 = null;
-            $logoPath = public_path('assets/images/AVI.png');
+            $logoPath = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'AVI.png');
             if (file_exists($logoPath)) {
                 $logoData = file_get_contents($logoPath);
-                $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+                $mimeType = $this->detectMimeType($logoPath);
+                $logoBase64 = 'data:' . $mimeType . ';base64,' . base64_encode($logoData);
             } else {
                 \Log::warning('AVI logo not found at: ' . $logoPath);
             }
 
+            // Konversi gambar data menjadi base64
             $processedData = $data->map(function ($item) {
-                // Process check_item image
                 if ($item->check_item) {
                     $item->check_item_base64 = $this->getImageAsBase64($item->check_item);
                 }
-                
-                // Process result image
                 if ($item->resultImage) {
                     $item->result_image_base64 = $this->getImageAsBase64($item->resultImage);
                 }
-                
                 return $item;
             });
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
+            $pdf = Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
                 ->setPaper('a4', 'landscape')
                 ->setOptions([
                     'defaultFont' => 'sans-serif',
                     'isRemoteEnabled' => true,
                     'isHtml5ParserEnabled' => true,
                     'isPhpEnabled' => true,
-                    'chroot' => public_path(), // Set chroot for better file access
+                    'chroot' => public_path(),
                 ]);
 
             $filename = 'AVI_Checksheet_Report_' . date('Y-m-d_H-i-s') . '.pdf';
-            
             return $pdf->download($filename);
 
         } catch (\Exception $e) {
@@ -144,7 +123,6 @@ class ExportController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengekspor PDF: ' . $e->getMessage()
@@ -152,29 +130,29 @@ class ExportController extends Controller
         }
     }
 
+    /**
+     * Convert image to base64 (support Linux & Windows).
+     */
     private function getImageAsBase64($imagePath)
     {
         try {
-            // Hapus "storage/" di depan kalau ada
-            $normalizedPath = preg_replace('/^storage\//', '', ltrim($imagePath, '/'));
+            $normalizedPath = preg_replace('/^storage[\/\\\\]/', '', ltrim($imagePath, '/\\'));
+            $publicPath = public_path('storage' . DIRECTORY_SEPARATOR . $normalizedPath);
 
-            // Full path di public/storage/
-            $publicPath = public_path('storage/' . $normalizedPath);
             if (file_exists($publicPath)) {
                 $file = file_get_contents($publicPath);
-                $mimeType = mime_content_type($publicPath);
+                $mimeType = $this->detectMimeType($publicPath);
                 return 'data:' . $mimeType . ';base64,' . base64_encode($file);
             }
 
-            // Fallback ke Storage facade
             if (Storage::disk('public')->exists($normalizedPath)) {
                 $file = Storage::disk('public')->get($normalizedPath);
-                $mimeType = Storage::disk('public')->mimeType($normalizedPath);
+                $mimeType = $this->detectMimeType($normalizedPath, true);
                 return 'data:' . $mimeType . ';base64,' . base64_encode($file);
             }
 
             \Log::warning('Image not found', [
-                'original' => $imagePath,
+                'original'   => $imagePath,
                 'normalized' => $normalizedPath,
                 'publicPath' => $publicPath
             ]);
@@ -189,5 +167,30 @@ class ExportController extends Controller
         }
     }
 
+    /**
+     * Detect mime type safely with fallback.
+     */
+    private function detectMimeType($path, $isStorage = false)
+    {
+        try {
+            if (!$isStorage) {
+                $mimeType = @mime_content_type($path);
+            } else {
+                $mimeType = Storage::disk('public')->mimeType($path);
+            }
 
+            if ($mimeType) return $mimeType;
+
+            // fallback by extension
+            $ext = pathinfo($path, PATHINFO_EXTENSION);
+            return match(strtolower($ext)) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                default => 'application/octet-stream',
+            };
+        } catch (\Exception $e) {
+            return 'application/octet-stream';
+        }
+    }
 }
