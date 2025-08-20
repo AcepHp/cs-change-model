@@ -25,7 +25,6 @@ class CreateCsChangemodelTable extends Migration
             $table->enum('image_type', ['labelImage', 'pacoImage', 'tagImage'])->nullable();
         });
     }
-
     /**
      * Reverse the migrations.
      */
