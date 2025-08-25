@@ -142,13 +142,17 @@ class ExportController extends Controller
             if (file_exists($publicPath)) {
                 $file = file_get_contents($publicPath);
                 $mimeType = $this->detectMimeType($publicPath);
-                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+                $base64 = base64_encode($file);
+                $base64 = preg_replace('/\s+/', '', $base64); // Hapus whitespace
+                return 'data:' . $mimeType . ';base64,' . $base64;
             }
 
             if (Storage::disk('public')->exists($normalizedPath)) {
                 $file = Storage::disk('public')->get($normalizedPath);
                 $mimeType = $this->detectMimeType($normalizedPath, true);
-                return 'data:' . $mimeType . ';base64,' . base64_encode($file);
+                $base64 = base64_encode($file);
+                $base64 = preg_replace('/\s+/', '', $base64); // Hapus whitespace
+                return 'data:' . $mimeType . ';base64,' . $base64;
             }
 
             \Log::warning('Image not found', [
@@ -166,6 +170,7 @@ class ExportController extends Controller
             return null;
         }
     }
+
 
     /**
      * Detect mime type safely with fallback.
