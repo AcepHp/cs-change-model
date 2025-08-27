@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Checksheet Data Export</title>
+    <title>Checksheet Change Model</title>
     <style>
     body {
         font-family: Arial, sans-serif;
@@ -14,75 +14,73 @@
         background-color: #fff;
     }
 
-    .header-container {
-        border-bottom: 2px solid #000;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
+    /* === KOP LAPORAN === */
+    .kop-table {
+        width: 100%;
+        border: 1px solid #000;
+        border-collapse: collapse;
+        margin-bottom: 5px;
     }
 
-    .logo-section {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+    .kop-table td {
+        border: 1px solid #000;
+        vertical-align: middle;
+        padding: 5px;
     }
 
-    .logo-section img {
-        max-height: 60px;
+    .kop-logo {
+        text-align: center;
+        width: 25%;
+    }
+
+    .kop-logo img {
+        max-height: 50px;
         width: auto;
     }
 
-    .company-info h1 {
-        font-size: 18px;
-        margin: 0;
+    .kop-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+        width: 50%;
+    }
+
+    .kop-info {
+        width: 25%;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .kop-info div {
+        padding: 5px;
+    }
+
+    /* === BOX 4 KOLOM === */
+    .box-table {
+        width: 100%;
+        border: 1px solid #000;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 10px;
+        text-align: center;
+        color: #000;
+    }
+
+    .box-table th,
+    .box-table td {
+        border: 1px solid #000;
+        padding: 6px;
+        width: 25%;
+        color: #000;
+    }
+
+    .box-table th {
+        background-color: #f2f2f2;
         font-weight: bold;
         color: #000;
     }
 
-    .company-subtitle {
-        font-size: 10px;
-        margin-top: 2px;
-        font-style: italic;
-        color: #333;
-    }
-
-    .company-address {
-        font-size: 9px;
-        color: #444;
-        line-height: 1.3;
-    }
-
-    .filters {
-        border: 1px solid #999;
-        padding: 10px 15px;
-        margin-bottom: 15px;
-        font-size: 9px;
-        border-radius: 4px;
-    }
-
-    .filters h3 {
-        margin: 0 0 8px 0;
-        font-size: 10px;
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 4px;
-    }
-
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 5px 15px;
-    }
-
-    .filter-label {
-        font-weight: bold;
-        color: #000;
-    }
-
-    .summary {
-        text-align: right;
-        margin-bottom: 10px;
-        font-weight: bold;
-    }
-
+    /* === TABLE DATA === */
     table {
         width: 100%;
         border-collapse: collapse;
@@ -93,51 +91,23 @@
     td {
         border: 1px solid #888;
         padding: 5px;
-        vertical-align: top;
+        vertical-align: middle;
+        color: #000;
     }
 
     th {
-        background-color: #000;
-        color: white;
+        background-color: #f2f2f2;
+        color: #000;
         font-weight: bold;
         text-align: center;
     }
+
 
     .text-center {
         text-align: center;
     }
 
-    .status-ok,
-    .status-ng,
-    .status-pending {
-        font-weight: bold;
-        font-size: 8px;
-        padding: 2px 4px;
-        border: 1px solid #555;
-        border-radius: 3px;
-        display: inline-block;
-    }
 
-    .status-ok {
-        color: #000;
-    }
-
-    .status-ng {
-        color: #000;
-    }
-
-    .status-pending {
-        color: #000;
-        font-style: italic;
-    }
-
-    .footer {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        font-size: 8px;
-        color: #555;
-    }
 
     .no-data {
         text-align: center;
@@ -156,66 +126,55 @@
 </head>
 
 <body>
-    <div class="header-container">
-        <div class="logo-section">
-            {{-- Display logo using base64 data if available --}}
-            @if($logoBase64)
-            <img src="{{ $logoBase64 }}" alt="AVI Logo">
-            @endif
-            <div class="company-info">
-                <h1>PT ASTRA VISTEON INDONESIA</h1>
-                <p class="company-subtitle">Automotive Cockpit Electronics Manufacturer</p>
-                <div class="company-address">
-                    Jl. Lanbau RT 05/10 Kel. Karang Asem Barat Kec. Citeureup, Bogor, Indonesia, 16810<br>
-                    Email: marketing@astra-visteon.com
+    {{-- === HEADER (KOP) === --}}
+    <table class="kop-table">
+        <tr>
+            <td class="kop-logo">
+                @if($logoBase64)
+                <img src="{{ $logoBase64 }}" alt="AVI Logo">
+                @endif
+            </td>
+            <td class="kop-title">
+                CHECKSHEET CHANGE MODEL
+            </td>
+            <td class="kop-info">
+                <div>
+                    Tanggal:
+                    @if($filters['date'] ?? false)
+                    {{ \Carbon\Carbon::parse($filters['date'])->format('d/m/Y') }}
+                    @else
+                    {{ now()->format('d/m/Y') }}
+                    @endif
                 </div>
-            </div>
-        </div>
-    </div>
+            </td>
+        </tr>
+    </table>
 
-    @if(!empty(array_filter($filters)))
-    <div class="filters">
-        <h3>Applied Filters</h3>
-        <div class="filter-grid">
-            @if($filters['area'] ?? null)
-            <div><span class="filter-label">Area:</span> {{ $filters['area'] }}</div>
-            @endif
-            @if($filters['line'] ?? null)
-            <div><span class="filter-label">Line:</span> {{ $filters['line'] }}</div>
-            @endif
-            @if($filters['model'] ?? null)
-            <div><span class="filter-label">Model:</span> {{ $filters['model'] }}</div>
-            @endif
-            @if($filters['station'] ?? null)
-            <div><span class="filter-label">Station:</span> {{ $filters['station'] }}</div>
-            @endif
-            @if($filters['date_from'] ?? null)
-            <div><span class="filter-label">Date From:</span>
-                {{ \Carbon\Carbon::parse($filters['date_from'])->format('d/m/Y') }}</div>
-            @endif
-            @if($filters['date_to'] ?? null)
-            <div><span class="filter-label">Date To:</span>
-                {{ \Carbon\Carbon::parse($filters['date_to'])->format('d/m/Y') }}</div>
-            @endif
-            @if($filters['shift'] ?? null)
-            <div><span class="filter-label">Shift:</span> {{ $filters['shift'] }}</div>
-            @endif
-            @if($filters['prod_status'] ?? null)
-            <div><span class="filter-label">Prod Status:</span> {{ $filters['prod_status'] }}</div>
-            @endif
-            @if($filters['quality_status'] ?? null)
-            <div><span class="filter-label">Quality Status:</span>
-                {{ $filters['quality_status'] === 'pending' ? 'Pending' : $filters['quality_status'] }}</div>
-            @endif
-        </div>
-    </div>
-    @endif
+    {{-- === KOTAK SHIFT, AREA, LINE, MODEL === --}}
+    <table class="box-table">
+        <tr>
+            <th>Shift</th>
+            <th>Area</th>
+            <th>Line</th>
+            <th>Model</th>
+        </tr>
+        <tr>
+            <td>{{ $filters['shift'] ?? '-' }}</td>
+            <td>{{ $filters['area'] ?? '-' }}</td>
+            <td>{{ $filters['line'] ?? '-' }}</td>
+            <td>
+                {{ $processedData->first()->log->partModelRelation->frontView ?? $filters['model'] ?? '-' }}
+            </td>
 
+        </tr>
+    </table>
+
+    {{-- === SUMMARY === --}}
     <div class="summary">
         Total Records: {{ number_format($totalRecords) }}
     </div>
 
-    {{-- Use processedData instead of data and display pre-converted base64 images --}}
+    {{-- === TABLE DATA === --}}
     @if($processedData->count() > 0)
     <table>
         <thead>
@@ -247,7 +206,7 @@
                 <td>{{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}</td>
                 <td>{{ $item->station ?? '-' }}</td>
 
-                {{-- Use pre-converted base64 image data --}}
+                {{-- Check Item (image or text) --}}
                 <td class="image-cell">
                     @if($item->check_item_base64)
                     <img src="{{ $item->check_item_base64 }}" alt="Check Item">
@@ -258,7 +217,7 @@
 
                 <td>{{ $item->standard ?? '-' }}</td>
 
-                {{-- Use pre-converted base64 image data --}}
+                {{-- Result Image --}}
                 <td class="image-cell">
                     @if($item->result_image_base64)
                     <img src="{{ $item->result_image_base64 }}" alt="Result">
@@ -270,35 +229,32 @@
                 {{-- Prod Status --}}
                 <td class="text-center">
                     @if($item->prod_status === 'OK')
-                    <span class="status-ok">OK</span>
+                    <span>OK</span>
                     @elseif($item->prod_status === 'NG')
-                    <span class="status-ng">NG</span>
+                    <span>NG</span>
                     @else
                     -
                     @endif
                 </td>
 
-                {{-- Prod Checked By --}}
                 <td class="text-center">{{ $item->prod_checked_by ?? '-' }}</td>
 
                 {{-- Quality Status --}}
                 <td class="text-center">
                     @if($item->quality_status === 'OK')
-                    <span class="status-ok">OK</span>
+                    <span>OK</span>
                     @elseif($item->quality_status === 'NG')
-                    <span class="status-ng">NG</span>
+                    <span>NG</span>
                     @else
-                    <span class="status-pending">Pending</span>
+                    <span>Pending</span>
                     @endif
                 </td>
 
-                {{-- Quality Checked By --}}
                 <td class="text-center">{{ $item->quality_checked_by ?? '-' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
-
     @else
     <div class="no-data">No data found with the applied filters.</div>
     @endif
