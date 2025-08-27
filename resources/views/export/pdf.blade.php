@@ -180,11 +180,6 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Tanggal</th>
-                <th>Shift</th>
-                <th>Area</th>
-                <th>Line</th>
-                <th>Model</th>
                 <th>Station</th>
                 <th>Check Item</th>
                 <th>Standard</th>
@@ -199,11 +194,6 @@
             @foreach($processedData as $index => $item)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($item->log->date ?? now())->format('d/m/Y') }}</td>
-                <td class="text-center">{{ $item->log->shift ?? '-' }}</td>
-                <td>{{ $item->log->area ?? '-' }}</td>
-                <td>{{ $item->log->line ?? '-' }}</td>
-                <td>{{ $item->log->partModelRelation->frontView ?? $item->log->model ?? '-' }}</td>
                 <td>{{ $item->station ?? '-' }}</td>
 
                 {{-- Check Item (image or text) --}}
