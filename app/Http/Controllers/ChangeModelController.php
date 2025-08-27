@@ -22,7 +22,7 @@ class ChangeModelController extends Controller
             $query->where('model', $request->model);
         }
 
-        $dataChecksheet = $query->orderBy('id', 'desc')->paginate(10);
+        $dataChecksheet = $query->orderBy('id', 'asc')->paginate(10);
 
         // Get all unique models from the current page data
         $models = $dataChecksheet->pluck('model')->unique()->filter();
