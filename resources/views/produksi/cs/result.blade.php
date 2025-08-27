@@ -10,6 +10,18 @@
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 @include('components.partials.toast')
 
+                {{-- Added data submission status check --}}
+                @if($isSubmitted)
+                    <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-yellow-800 font-medium">Data untuk kombinasi Area: {{ $area }}, Line: {{ $line }}, Model: {{ $frontView }}, Shift: {{ $shift }}, Tanggal: {{ $date }} sudah pernah disubmit dan terkunci. Tidak dapat menambah data baru.</span>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Informasi Umum --}}
                 <div class="mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -38,16 +50,26 @@
                 <div class="mb-6 border rounded-lg shadow-sm">
                     <div class="flex justify-between items-center px-4 py-3 bg-gray-100 border-b">
                         <div class="font-semibold text-lg text-gray-700">Station: {{ $station }}</div>
-                        <button type="button" onclick="openStationScanner('{{ $station }}')"
-                            class="inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 opacity-75"
-                            id="station-scan-btn-{{ $station }}">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                                </path>
-                            </svg>
-                            Scan Station (Locked)
-                        </button>
+                        {{-- Fixed button state based on submission status --}}
+                        @if($isSubmitted)
+                            <span class="inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-gray-500 rounded">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Station Locked (Submitted)
+                            </span>
+                        @else
+                            <button type="button" onclick="openStationScanner('{{ $station }}')"
+                                class="inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 opacity-75"
+                                id="station-scan-btn-{{ $station }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                    </path>
+                                </svg>
+                                Scan Station (Locked)
+                            </button>
+                        @endif
                     </div>
                     <div class="overflow-x-auto" data-station="{{ $station }}">
                         <table class="table-auto w-full text-sm text-left text-gray-700">
@@ -60,7 +82,7 @@
                                     <th class="border px-3 py-2">Action</th>
                                     <th class="border px-3 py-2 w-[200px]">Value</th>
                                     <th class="border px-3 py-2 w-[100px]">Status</th>
-                                    <th class="border px-3 py-2 w-[100px]">Image</th> {{-- New column for image --}}
+                                    <th class="border px-3 py-2 w-[100px]">Image</th>
                                     <th class="border px-3 py-2 w-[100px]">Submit</th>
                                 </tr>
                             </thead>
@@ -74,11 +96,14 @@
                                 // Get existing log detail for this item, if any
                                 $logDetailKey = $item->check_item . '|' . $item->standard;
                                 $existingDetail = $existingLogDetails[$logDetailKey] ?? null;
+                                $isItemSubmitted = $existingDetail !== null;
                                 @endphp
                                 <tr data-item-id="{{ $item->id }}" data-item-list="{{ $item->list }}"
                                     id="row-{{ $item->id }}"
-                                    data-check-item="{{ $item->check_item }}" {{-- ADDED THIS --}}
-                                    data-standard="{{ $item->standard }}"> {{-- ADDED THIS --}}
+                                    data-check-item="{{ $item->check_item }}"
+                                    data-standard="{{ $item->standard }}"
+                                    {{-- Added class for submitted items --}}
+                                    class="{{ $isItemSubmitted ? 'bg-green-50 border-green-200' : '' }}">
                                     <td class="border px-3 py-2">{{ $item->list }}</td>
                                     <td class="border px-3 py-2">
                                         @if ($isImage)
@@ -95,8 +120,9 @@
                                         @if($actualType === 'scan' || $actualType === 'containscan')
                                         <button type="button"
                                             onclick="openBarcodeScanner('{{ $item->id }}', '{{ $actualType }}')"
-                                            class="px-3 py-1 bg-gray-400 text-white text-xs rounded opacity-50 cursor-not-allowed"
-                                            id="scan-button-{{ $item->id }}" disabled>
+                                            {{-- Button state based on submission status --}}
+                                            class="px-3 py-1 text-white text-xs rounded {{ $isSubmitted || $isItemSubmitted ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-gray-400 opacity-50 cursor-not-allowed' }}"
+                                            id="scan-button-{{ $item->id }}" {{ $isSubmitted || $isItemSubmitted ? 'disabled' : 'disabled' }}>
                                             <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -107,8 +133,9 @@
                                         </button>
                                         @elseif($actualType === 'check')
                                         <select id="check-select-{{ $item->id }}"
-                                            class="border rounded px-2 py-1 text-sm w-full bg-gray-100 opacity-50 cursor-not-allowed"
-                                            onchange="updateCheckStatus('{{ $item->id }}')" disabled>
+                                            {{-- Select state based on submission status --}}
+                                            class="border rounded px-2 py-1 text-sm w-full {{ $isSubmitted || $isItemSubmitted ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-100 opacity-50 cursor-not-allowed' }}"
+                                            onchange="updateCheckStatus('{{ $item->id }}')" {{ $isSubmitted || $isItemSubmitted ? 'disabled' : 'disabled' }}>
                                             <option value="">Pilih</option>
                                             <option value="OK" {{ ($existingDetail && $existingDetail->prod_status === 'OK') ? 'selected' : '' }}>OK</option>
                                             <option value="NG" {{ ($existingDetail && $existingDetail->prod_status === 'NG') ? 'selected' : '' }}>NG</option>
@@ -135,7 +162,7 @@
                                         </span>
                                     </td>
                                     <td class="border px-3 py-2">
-                                        <span id="status-{{ $item->id }}" class="font-semibold text-gray-700">
+                                        <span id="status-{{ $item->id }}" class="font-semibold {{ $existingDetail && $existingDetail->prod_status === 'OK' ? 'text-green-600' : ($existingDetail && $existingDetail->prod_status === 'NG' ? 'text-red-600' : 'text-gray-700') }}">
                                             @if($existingDetail && $existingDetail->prod_status)
                                                 {{ $existingDetail->prod_status }}
                                             @else
@@ -143,10 +170,9 @@
                                             @endif
                                         </span>
                                     </td>
-                                    {{-- New column for image upload --}}
                                     <td class="border px-3 py-2 text-center">
                                         @if($item->image_type)
-                                            <button type="button" class="upload-image-btn bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs opacity-50 cursor-not-allowed"
+                                            <button type="button" class="upload-image-btn bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs {{ $isSubmitted || $isItemSubmitted ? 'opacity-50 cursor-not-allowed' : 'opacity-50 cursor-not-allowed' }}"
                                                 data-item-id="{{ $item->id }}"
                                                 data-area="{{ $area }}"
                                                 data-line="{{ $line }}"
@@ -156,7 +182,7 @@
                                                 data-date="{{ $date }}"
                                                 data-check-item="{{ $item->check_item }}"
                                                 data-standard="{{ $item->standard }}"
-                                                disabled> {{-- Disabled by default --}}
+                                                {{ $isSubmitted || $isItemSubmitted ? 'disabled' : 'disabled' }}>
                                                 Upload Gambar
                                             </button>
                                             <div class="image-preview mt-2" id="imagePreview-{{ $item->id }}">
@@ -167,25 +193,33 @@
                                                         onclick="openImageModal(this.src)">
                                                 @endif
                                             </div>
-
                                         @else
                                             <span class="text-gray-500 italic">-</span>
                                         @endif
                                     </td>
                                     <td class="border px-3 py-2 text-center">
-                                        <button type="button" onclick="saveItem('{{ $item->id }}')"
-                                            class="px-3 py-1 bg-gray-400 text-white text-xs rounded opacity-50 cursor-not-allowed"
-                                            id="submit-button-{{ $item->id }}" disabled>
-                                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                                                </path>
-                                            </svg>
-                                            Simpan
-                                        </button>
+                                        {{-- Submit button state based on submission status --}}
+                                        @if($isItemSubmitted)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Tersimpan
+                                            </span>
+                                        @else
+                                            <button type="button" onclick="saveItem('{{ $item->id }}')"
+                                                class="px-3 py-1 bg-gray-400 text-white text-xs rounded opacity-50 cursor-not-allowed"
+                                                id="submit-button-{{ $item->id }}" disabled>
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                                    </path>
+                                                </svg>
+                                                Simpan
+                                            </button>
+                                        @endif
                                         <div id="ng-warning-{{ $item->id }}" class="text-red-500 text-xs mt-1 hidden">
-
                                         </div>
                                     </td>
                                 </tr>
@@ -371,7 +405,8 @@
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4"></path>
+                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 
+                        0h4"></path>
                         </svg>
                     </div>
                     <div>
@@ -480,9 +515,12 @@
     let itemImages = {}; // Store Base64 image data per item, keyed by item ID
     let submittedItems = new Set(); // Track submitted items
 
+    const storageKey = `checksheet_${btoa('{{ $area }}_{{ $line }}_{{ $model }}_{{ $shift }}_{{ $date }}')}`;
+    const isDataSubmitted = {{ $isSubmitted ? 'true' : 'false' }};
+
     // Camera swap variables for QR scanners
-    let currentCameraStation = "environment"; // Default to back camera
-    let currentCameraBarcode = "environment"; // Default to back camera
+    let currentCameraStation = "environment";
+    let currentCameraBarcode = "environment";
     let availableCamerasStation = [];
     let availableCamerasBarcode = [];
 
@@ -492,21 +530,117 @@
     const cameraCanvas = document.getElementById('cameraCanvas');
     const photoPreview = document.getElementById('photoPreview');
     const takePhotoBtn = document.getElementById('takePhotoBtn');
-    const usePhotoBtn = document.getElementById('usePhotoBtn'); // Renamed from submitPhotoBtn
-    const closeCameraBtn = document.querySelector('#cameraModal button[onclick="closeCamera()"]'); // Get close button specifically for camera modal
+    const usePhotoBtn = document.getElementById('usePhotoBtn');
+    const closeCameraBtn = document.querySelector('#cameraModal button[onclick="closeCamera()"]');
     let currentStream;
-    let currentItemData = {}; // To store data of the item triggering the camera
-    let capturedImageDataUrl = null; // To store the captured image data URL
+    let currentItemData = {};
+    let capturedImageDataUrl = null;
 
     // Camera swap variables for image upload
-    let currentCameraImage = "environment"; // Default to back camera
+    let currentCameraImage = "environment";
     let availableCamerasImage = [];
 
     // CSRF Token for AJAX requests
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+    function saveToLocalStorage() {
+        if (isDataSubmitted) return; // Don't save if data is already submitted
+        
+        const data = {
+            itemValues: itemValues,
+            itemImages: itemImages,
+            scannedStations: scannedStations,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+        if (isDataSubmitted) return; // Don't load if data is already submitted
+        
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                itemValues = data.itemValues || {};
+                itemImages = data.itemImages || {};
+                scannedStations = data.scannedStations || {};
+                
+                // Restore UI state
+                restoreUIState();
+            } catch (e) {
+                console.error('Error loading from localStorage:', e);
+            }
+        }
+    }
+
+    function clearLocalStorage() {
+        localStorage.removeItem(storageKey);
+    }
+
+    function restoreUIState() {
+        // Restore item values and statuses
+        Object.keys(itemValues).forEach(itemId => {
+            const value = itemValues[itemId];
+            const display = document.getElementById(`value-display-${itemId}`);
+            const status = document.getElementById(`status-${itemId}`);
+            const selectElement = document.getElementById(`check-select-${itemId}`);
+            
+            if (display) display.innerText = value;
+            if (status) {
+                status.innerText = value;
+                status.className = `font-semibold ${value === 'OK' ? 'text-green-600' : 'text-red-600'}`;
+            }
+            if (selectElement) selectElement.value = value;
+        });
+
+        // Restore images
+        Object.keys(itemImages).forEach(itemId => {
+            const imagePreviewDiv = document.getElementById(`imagePreview-${itemId}`);
+            if (imagePreviewDiv && itemImages[itemId]) {
+                imagePreviewDiv.innerHTML = `<img src="${itemImages[itemId]}" alt="Captured Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">`;
+            }
+        });
+
+        // Restore scanned stations
+        Object.keys(scannedStations).forEach(station => {
+            if (scannedStations[station]) {
+                const stationBtn = document.getElementById(`station-scan-btn-${station}`);
+                if (stationBtn) {
+                    stationBtn.className = "inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700";
+                    stationBtn.innerHTML = `Station Unlocked`;
+                    
+                    // Enable inputs for this station
+                    document.querySelectorAll(`[data-station="${station}"] button, [data-station="${station}"] select`)
+                        .forEach(el => {
+                            const itemId = el.closest('tr').getAttribute('data-item-id');
+                            if (!submittedItems.has(itemId)) {
+                                el.disabled = false;
+                                el.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                                
+                                if (el.id && el.id.includes('scan-button')) {
+                                    el.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                                } else if (el.id && el.id.includes('submit-button')) {
+                                    el.classList.add('bg-green-600', 'hover:bg-green-700');
+                                } else if (el.tagName === 'SELECT') {
+                                    el.classList.remove('bg-gray-100');
+                                    el.classList.add('bg-white');
+                                } else if (el.classList.contains('upload-image-btn')) {
+                                    el.classList.remove('opacity-50', 'cursor-not-allowed');
+                                }
+                            }
+                        });
+                }
+            }
+        });
+    }
+
     // Initialize submitted items from existing data on page load
     document.addEventListener('DOMContentLoaded', () => {
+        if (!isDataSubmitted) {
+            loadFromLocalStorage();
+        }
+
         @foreach($results as $item)
             @php
                 $logDetailKey = $item->check_item . '|' . $item->standard;
@@ -514,43 +648,41 @@
             @endphp
             @if($existingDetail)
                 submittedItems.add('{{ $item->id }}');
-                // Also update the UI for already submitted items
-                const submitButton = document.getElementById(`submit-button-{{ $item->id }}`);
-                if (submitButton) {
-                    submitButton.innerHTML = `Tersimpan`;
-                    submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    submitButton.classList.add('bg-gray-500', 'cursor-not-allowed');
-                    submitButton.disabled = true;
-                }
-                const row = document.getElementById(`row-{{ $item->id }}`);
-                if (row) {
-                    row.classList.add('bg-green-50', 'border-green-200');
-                }
-                const scanButton = document.getElementById(`scan-button-{{ $item->id }}`);
-                if (scanButton) {
-                    scanButton.disabled = true;
-                    scanButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                    scanButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                }
-                const selectElement = document.getElementById(`check-select-{{ $item->id }}`);
-                if (selectElement) {
-                    selectElement.disabled = true;
-                    selectElement.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-100');
-                }
-                const uploadImageButton = row.querySelector('.upload-image-btn');
-                if (uploadImageButton) {
-                    uploadImageButton.disabled = true;
-                    uploadImageButton.classList.add('opacity-50', 'cursor-not-allowed');
-                }
                 itemValues['{{ $item->id }}'] = '{{ $existingDetail->scanResult ?? $existingDetail->prod_status }}';
             @endif
         @endforeach
+
+        if (isDataSubmitted) {
+            clearLocalStorage();
+        }
     });
 
+    function updateItemValue(itemId, value) {
+        if (isDataSubmitted) return;
+        itemValues[itemId] = value;
+        saveToLocalStorage();
+    }
+
+    function updateItemImage(itemId, imageData) {
+        if (isDataSubmitted) return;
+        itemImages[itemId] = imageData;
+        saveToLocalStorage();
+    }
+
+    function updateScannedStation(station, status) {
+        if (isDataSubmitted) return;
+        scannedStations[station] = status;
+        saveToLocalStorage();
+    }
 
     // --- Camera Upload Functions ---
     document.querySelectorAll('.upload-image-btn').forEach(button => {
         button.addEventListener('click', function() {
+            if (isDataSubmitted) {
+                showToast('error', 'Data sudah disubmit dan tidak dapat diubah.');
+                return;
+            }
+            
             currentItemData = {
                 itemId: this.dataset.itemId,
                 area: this.dataset.area,
@@ -559,15 +691,15 @@
                 imageType: this.dataset.imageType,
                 shift: this.dataset.shift,
                 date: this.dataset.date,
-                checkItem: this.dataset.checkItem, // Pass check_item
-                standard: this.dataset.standard // Pass standard
+                checkItem: this.dataset.checkItem,
+                standard: this.dataset.standard
             };
             openCamera();
         });
     });
 
     takePhotoBtn.addEventListener('click', capturePhoto);
-    usePhotoBtn.addEventListener('click', useCapturedPhoto); // New handler
+    usePhotoBtn.addEventListener('click', useCapturedPhoto);
     closeCameraBtn.addEventListener('click', closeCamera);
 
     async function openCamera() {
@@ -643,7 +775,7 @@
 
     function useCapturedPhoto() {
         // Store the captured image data URL for the specific item that triggered the camera
-        itemImages[currentItemData.itemId] = capturedImageDataUrl; 
+        updateItemImage(currentItemData.itemId, capturedImageDataUrl);
 
         // Find all items with the same image_type and update their image previews
         document.querySelectorAll(`.upload-image-btn[data-image-type="${currentItemData.imageType}"]`).forEach(button => {
@@ -651,10 +783,7 @@
             const imagePreviewDiv = document.getElementById(`imagePreview-${targetItemId}`);
             if (imagePreviewDiv) {
                 imagePreviewDiv.innerHTML = `<img src="${capturedImageDataUrl}" alt="Captured Image" class="w-24 h-24 object-cover rounded-md mx-auto cursor-pointer" onclick="openImageModal(this.src)">`;
-                // Also, ensure the itemImages object reflects this for all items that now show the preview
-                // This is crucial because when saveItem is called for *any* of these items,
-                // it should send the correct image data.
-                itemImages[targetItemId] = capturedImageDataUrl;
+                updateItemImage(targetItemId, capturedImageDataUrl);
             }
         });
 
@@ -674,6 +803,10 @@
 
     // --- Existing Scanner and Save Functions ---
     function openStationScanner(station) {
+        if (isDataSubmitted) {
+            showToast('error', 'Data sudah disubmit dan tidak dapat diubah.');
+            return;
+        }
         document.getElementById('scannerStationModal').classList.remove('hidden');
         startStationScanner(station);
     }
@@ -683,7 +816,6 @@
             qrScannerStation = new Html5Qrcode("readerStation");
         }
 
-        // Get available cameras first
         Html5Qrcode.getCameras().then(devices => {
             availableCamerasStation = devices;
 
@@ -700,67 +832,35 @@
                 },
                 qrCodeMessage => {
                     if (qrCodeMessage.trim() === station.trim()) {
-                        scannedStations[station] = true;
+                        updateScannedStation(station, true);
 
                         // Update station button to unlocked state
                         const stationBtn = document.getElementById(`station-scan-btn-${station}`);
-                        stationBtn.className =
-                            "inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700";
-                        stationBtn.innerHTML = `
-                            Station Unlocked
-                        `;
+                        stationBtn.className = "inline-flex items-center px-4 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700";
+                        stationBtn.innerHTML = `Station Unlocked`;
 
                         // Enable all inputs for this station
-                        document.querySelectorAll(
-                                `[data-station="${station}"] button, [data-station="${station}"] select`)
+                        document.querySelectorAll(`[data-station="${station}"] button, [data-station="${station}"] select`)
                             .forEach(el => {
                                 const itemId = el.closest('tr').getAttribute('data-item-id');
                                 if (!submittedItems.has(itemId)) {
                                     el.disabled = false;
-                                    el.classList.remove('opacity-50', 'cursor-not-allowed',
-                                        'bg-gray-400');
+                                    el.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
 
-                                    // Update button colors based on type
                                     if (el.id && el.id.includes('scan-button')) {
                                         el.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                                        el.innerHTML = `
-                                        Scan Barcode
-                                    `;
+                                        el.innerHTML = `Scan Barcode`;
                                     } else if (el.id && el.id.includes('submit-button')) {
                                         el.classList.add('bg-green-600', 'hover:bg-green-700');
-                                        el.innerHTML = `
-                                        Simpan
-                                    `;
+                                        el.innerHTML = `Simpan`;
                                     } else if (el.tagName === 'SELECT') {
                                         el.classList.remove('bg-gray-100');
                                         el.classList.add('bg-white');
-                                    } else if (el.classList.contains('upload-image-btn')) { // Enable upload image button
+                                    } else if (el.classList.contains('upload-image-btn')) {
                                         el.classList.remove('opacity-50', 'cursor-not-allowed');
                                     }
                                 }
                             });
-
-                        // Check if all stations are scanned
-                        const allStations = [...new Set(Array.from(document.querySelectorAll(
-                            '[data-station]')).map(
-                            el => el.getAttribute('data-station')))];
-                        const allScanned = allStations.every(st => scannedStations[st]);
-
-                        if (allScanned) {
-                            const submitBtn = document.getElementById('submitAllBtn');
-                            if (submitBtn) {
-                                submitBtn.disabled = false;
-                                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed',
-                                    'bg-gray-400');
-                                submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                                submitBtn.innerHTML = `
-                                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="5 13l4 4L19 7"></path>
-                                    </svg>
-                                    Simpan Semua (Hanya OK)
-                                `;
-                            }
-                        }
 
                         showToast('success', `Station ${station} berhasil discan dan dibuka!`);
                     } else {
@@ -802,8 +902,7 @@
     }
 
     function openBarcodeScanner(itemId, actualType) {
-        // Check if item already submitted
-        if (submittedItems.has(itemId)) {
+        if (isDataSubmitted || submittedItems.has(itemId)) {
             showToast('error', 'Item ini sudah disubmit dan tidak dapat diubah lagi.');
             return;
         }
@@ -817,7 +916,6 @@
             qrScannerBarcode = new Html5Qrcode("readerBarcode");
         }
 
-        // Get available cameras first
         Html5Qrcode.getCameras().then(devices => {
             availableCamerasBarcode = devices;
 
@@ -840,13 +938,12 @@
                     const ngWarning = document.getElementById(`ng-warning-${itemId}`);
 
                     // Store the scanned value
-                    itemValues[itemId] = qrCodeMessage;
+                    updateItemValue(itemId, qrCodeMessage);
 
                     // Update display
                     const isImage = qrCodeMessage.match(/\.(jpeg|jpg|png)$/i);
                     if (isImage) {
-                        display.innerHTML =
-                            `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded cursor-pointer" onclick="openImageModal(this.src)">`;
+                        display.innerHTML = `<img src="${qrCodeMessage}" alt="Scanned Image" class="w-32 h-32 object-contain border rounded cursor-pointer" onclick="openImageModal(this.src)">`;
                     } else {
                         display.innerText = qrCodeMessage;
                     }
@@ -860,25 +957,20 @@
                     }
 
                     status.innerText = statusValue;
-                    status.className =
-                        `font-semibold ${statusValue === 'OK' ? 'text-green-600' : 'text-red-600'}`;
+                    status.className = `font-semibold ${statusValue === 'OK' ? 'text-green-600' : 'text-red-600'}`;
 
                     // Enable/disable submit button based on status
                     if (statusValue === 'NG') {
                         submitButton.disabled = true;
                         submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                         submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-400');
-                        submitButton.innerHTML = `
-                            Tidak Bisa Submit
-                        `;
+                        submitButton.innerHTML = `Tidak Bisa Submit`;
                         ngWarning.classList.remove('hidden');
                     } else {
                         submitButton.disabled = false;
                         submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-400');
                         submitButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                        submitButton.innerHTML = `
-                            Simpan
-                        `;
+                        submitButton.innerHTML = `Simpan`;
                         ngWarning.classList.add('hidden');
                     }
 
@@ -916,8 +1008,7 @@
     }
 
     function updateCheckStatus(itemId) {
-        // Check if item already submitted
-        if (submittedItems.has(itemId)) {
+        if (isDataSubmitted || submittedItems.has(itemId)) {
             showToast('error', 'Item ini sudah disubmit dan tidak dapat diubah lagi.');
             return;
         }
@@ -929,7 +1020,7 @@
         const ngWarning = document.getElementById(`ng-warning-${itemId}`);
 
         if (select.value) {
-            itemValues[itemId] = select.value;
+            updateItemValue(itemId, select.value);
             status.innerText = select.value;
             status.className = `font-semibold ${select.value === 'OK' ? 'text-green-600' : 'text-red-600'}`;
             display.innerText = select.value;
@@ -939,17 +1030,13 @@
                 submitButton.disabled = true;
                 submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                 submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-400');
-                submitButton.innerHTML = `
-                    Tidak Bisa Submit
-                `;
+                submitButton.innerHTML = `Tidak Bisa Submit`;
                 ngWarning.classList.remove('hidden');
             } else {
                 submitButton.disabled = false;
                 submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-400');
                 submitButton.classList.add('bg-green-600', 'hover:bg-green-700');
-                submitButton.innerHTML = `
-                    Simpan
-                `;
+                submitButton.innerHTML = `Simpan`;
                 ngWarning.classList.add('hidden');
             }
         } else {
@@ -963,8 +1050,7 @@
     }
 
     function saveItem(itemId) {
-        // Check if item already submitted
-        if (submittedItems.has(itemId)) {
+        if (isDataSubmitted || submittedItems.has(itemId)) {
             showToast('error', 'Item ini sudah disubmit dan tidak dapat diubah lagi.');
             return;
         }
@@ -973,7 +1059,6 @@
         const statusSpan = document.getElementById(`status-${itemId}`);
         const row = document.getElementById(`row-${itemId}`);
         const uploadImageButton = row.querySelector('.upload-image-btn');
-
 
         if (!itemValues[itemId] || !statusSpan.innerText || statusSpan.innerText === '-') {
             showToast('error', 'Data belum lengkap atau belum discan.');
@@ -1010,26 +1095,21 @@
         formData.append('scan_result', itemValues[itemId]);
         formData.append('production_status', statusSpan.innerText);
         formData.append('actual', itemValues[itemId]);
-
-        // Always append check_item and standard from the row's dataset
-        formData.append('check_item', row.dataset.checkItem); // ADDED THIS
-        formData.append('standard', row.dataset.standard);   // ADDED THIS
+        formData.append('check_item', row.dataset.checkItem);
+        formData.append('standard', row.dataset.standard);
 
         // Add image data if available for this item
         if (itemImages[itemId]) {
             formData.append('image', itemImages[itemId]);
-            // Only append image_type if an image is actually being sent and the button exists
             if (uploadImageButton) {
                 formData.append('image_type', uploadImageButton.dataset.imageType || '');
             }
         } else {
-            // If no image was taken, but image_type exists (meaning it's an image-enabled row), send empty string for image
             if (uploadImageButton && uploadImageButton.dataset.imageType) {
-                formData.append('image', ''); // Send empty string if no image
+                formData.append('image', '');
                 formData.append('image_type', uploadImageButton.dataset.imageType || '');
             }
         }
-
 
         fetch("{{ route('produksi.inputChecksheet.save') }}", {
                 method: "POST",
@@ -1045,9 +1125,7 @@
                     submittedItems.add(itemId);
 
                     // Update button to permanent "Tersimpan" state
-                    submitButton.innerHTML = `
-                        Tersimpan
-                    `;
+                    submitButton.innerHTML = `Tersimpan`;
                     submitButton.classList.remove('bg-green-600', 'hover:bg-green-700');
                     submitButton.classList.add('bg-gray-500', 'cursor-not-allowed');
                     submitButton.disabled = true;
@@ -1070,7 +1148,7 @@
                         selectElement.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-100');
                     }
 
-                    if (uploadImageButton) { // Disable upload image button after item is saved
+                    if (uploadImageButton) {
                         uploadImageButton.disabled = true;
                         uploadImageButton.classList.add('opacity-50', 'cursor-not-allowed');
                     }
@@ -1086,13 +1164,14 @@
                         }
                     }
 
+                    delete itemValues[itemId];
+                    delete itemImages[itemId];
+                    saveToLocalStorage();
 
                     showToast('success', 'Data berhasil disimpan! Item ini tidak dapat diubah lagi.');
                 } else {
                     showToast('error', data.message || 'Gagal menyimpan data.');
-                    submitButton.innerHTML = `
-                        Simpan
-                    `;
+                    submitButton.innerHTML = `Simpan`;
                     submitButton.disabled = false;
                     submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
@@ -1100,9 +1179,7 @@
             .catch(err => {
                 console.error('Submit error:', err);
                 showToast('error', 'Terjadi kesalahan saat menyimpan data.');
-                submitButton.innerHTML = `
-                    Simpan
-                `;
+                submitButton.innerHTML = `Simpan`;
                 submitButton.disabled = false;
                 submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
             });
