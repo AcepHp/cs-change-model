@@ -443,15 +443,35 @@
     <script>
         const imageDetailModal = document.getElementById('imageDetailModal');
         const modalImage = document.getElementById('modalImage');
+        const modalContent = document.getElementById('modalContent');
 
         function openImageModal(imageUrl) {
             modalImage.src = imageUrl;
             imageDetailModal.classList.remove('hidden');
+
+            // animasi muncul
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
         function closeImageModal() {
-            imageDetailModal.classList.add('hidden');
-            modalImage.src = ''; // Clear image source
+            // animasi keluar
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                imageDetailModal.classList.add('hidden');
+                modalImage.src = ''; // Clear image source
+            }, 200);
         }
+
+        // tutup modal saat klik di luar konten
+        imageDetailModal.addEventListener('click', (e) => {
+            if (e.target === imageDetailModal) {
+                closeImageModal();
+            }
+        });
     </script>
 </x-app-layout>

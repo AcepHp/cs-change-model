@@ -455,9 +455,17 @@
 
     {{-- Image Detail Modal --}}
     <div id="imageDetailModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-xl w-full mx-auto p-4 relative">
-            <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
-            <img id="modalImage" src="/" alt="Detail Image" class="max-w-full max-h-[80vh] mx-auto object-contain rounded-md">
+        <div id="modalContent" class="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-auto p-4 relative transform transition-all scale-95 opacity-0">
+            <!-- Close Button -->
+            <button onclick="closeImageModal()" 
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-900 text-2xl font-bold transition">
+                &times;
+            </button>
+
+            <!-- Image -->
+            <img id="modalImage" src="/placeholder.svg" 
+                alt="Detail Image" 
+                class="max-w-full max-h-[80vh] mx-auto object-contain rounded-lg shadow-md">
         </div>
     </div>
 
@@ -1172,15 +1180,35 @@
     // --- Image Detail Modal Functions ---
     const imageDetailModal = document.getElementById('imageDetailModal');
     const modalImage = document.getElementById('modalImage');
+    const modalContent = document.getElementById('modalContent');
 
     function openImageModal(imageUrl) {
         modalImage.src = imageUrl;
         imageDetailModal.classList.remove('hidden');
+
+        // animasi muncul
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
     }
 
     function closeImageModal() {
-        imageDetailModal.classList.add('hidden');
-        modalImage.src = ''; // Clear image source
+        // animasi keluar
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            imageDetailModal.classList.add('hidden');
+            modalImage.src = ''; // Clear image source
+        }, 200);
     }
+
+    // tutup modal saat klik di luar konten
+    imageDetailModal.addEventListener('click', (e) => {
+        if (e.target === imageDetailModal) {
+            closeImageModal();
+        }
+    });
     </script>
 </x-app-layout>
