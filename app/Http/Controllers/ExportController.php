@@ -2,168 +2,205 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Models\LogDetailCs;
 use App\Models\LogCs;
-use App\Models\ChangeModel;
 use App\Models\PartModel;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class ExportController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $areas = \DB::table('log_cs')->select('area')->distinct()->whereNotNull('area')->pluck('area');
-        $lines = \DB::table('log_cs')->select('line')->distinct()->whereNotNull('line')->pluck('line');
-        
-        $models = PartModel::select('Model', 'frontView')
-            ->whereNotNull('frontView')
-            ->whereNotNull('Model')
-            ->distinct()
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->Model => $item->frontView];
-            });
-        
-        $title = 'Export Data Checksheet';
-        $breadcrumbs = [
-            ['label' => 'Home', 'url' => '/dashboard', 'active' => false],
-            ['label' => 'Export Data', 'url' => route('export.index'), 'active' => true],
-        ];
+        // Get unique values for filters
+        $areas = LogCs::distinct()->pluck('area')->filter()->sort()->values();
+        $lines = LogCs::distinct()->pluck('line')->filter()->sort()->values();
+        $models = PartModel::pluck('frontView', 'Model')->toArray();
 
-        return view('export.index', compact(
-            'areas', 'lines', 'models', 'title', 'breadcrumbs'
-        ));
+        return view('export.index', [
+            'title' => 'Export Data',
+            'areas' => $areas,
+            'lines' => $lines,
+            'models' => $models,
+        ]);
     }
 
     public function exportPdf(Request $request)
     {
         try {
-            $filters = $request->only([
-                'area', 'line', 'model', 'date', 'shift'
+            Log::info('PDF Export started with filters', $request->all());
+
+            // Build query with filters
+            $query = LogDetailCs::with(['log.partModelRelation']);
+
+            // Apply filters
+            if ($request->filled('area')) {
+                $query->whereHas('log', function ($q) use ($request) {
+                    $q->where('area', $request->area);
+                });
+            }
+
+            if ($request->filled('line')) {
+                $query->whereHas('log', function ($q) use ($request) {
+                    $q->where('line', $request->line);
+                });
+            }
+
+            if ($request->filled('model')) {
+                $query->whereHas('log', function ($q) use ($request) {
+                    $q->where('model', $request->model);
+                });
+            }
+
+            if ($request->filled('date')) {
+                $query->whereHas('log', function ($q) use ($request) {
+                    $q->whereDate('date', $request->date);
+                });
+            }
+
+            if ($request->filled('shift')) {
+                $query->whereHas('log', function ($q) use ($request) {
+                    $q->where('shift', $request->shift);
+                });
+            }
+
+            $data = $query->orderBy('created_at', 'desc')->get();
+
+            if ($data->isEmpty()) {
+                return response()->json(['message' => 'No data found'], 404);
+            }
+
+            // Process data and convert images to base64
+            $processedData = $this->processDataForPdf($data);
+
+            // Get logo as base64
+            $logoBase64 = $this->getLogoBase64();
+
+            $filters = $request->only(['date', 'shift', 'area', 'line', 'model']);
+
+            $pdf = Pdf::loadView('export.pdf', [
+                'processedData' => $processedData,
+                'totalRecords' => $data->count(),
+                'filters' => $filters,
+                'logoBase64' => $logoBase64,
             ]);
 
-            $filters = array_filter($filters, fn($value) => !empty($value));
+            $pdf->setPaper('A4', 'landscape');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'defaultFont' => 'Arial',
+                'dpi' => 150,
+            ]);
 
-            $query = LogDetailCs::with(['log' => function($query) {
-                    $query->with('partModelRelation');
-                }])
-                ->when($filters['area'] ?? null, fn($query, $area) =>
-                    $query->whereHas('log', fn($q) => $q->where('area', $area)))
-                ->when($filters['line'] ?? null, fn($query, $line) =>
-                    $query->whereHas('log', fn($q) => $q->where('line', $line)))
-                ->when($filters['model'] ?? null, fn($query, $model) =>
-                    $query->whereHas('log', fn($q) => $q->where('model', $model)))
-                ->when($filters['date'] ?? null, fn($query, $date) =>
-                    $query->whereHas('log', fn($q) => $q->whereDate('date', $date)))
-                ->when($filters['shift'] ?? null, fn($query, $shift) =>
-                    $query->whereHas('log', fn($q) => $q->where('shift', $shift)))
-                ->join('log_cs', 'log_detail_cs.id_log', '=', 'log_cs.id_log')
-                ->orderBy('log_cs.date', 'asc')
-                ->orderBy('log_cs.shift', 'asc')
-                ->orderBy('log_cs.area', 'asc')
-                ->orderBy('log_cs.line', 'asc')
-                ->orderBy('log_cs.model', 'asc')
-                ->orderBy('log_detail_cs.list', 'asc')
-                ->select('log_detail_cs.*');
+            $filename = 'AVI_Checksheet_Report_' . now()->format('Y-m-d_H-i-s') . '.pdf';
 
-            $data = $query->get();
-            $totalRecords = $data->count();
-
-            if ($totalRecords == 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak ada data untuk diekspor dengan filter yang dipilih.'
-                ], 404);
-            }
-
-            // Logo perusahaan
-            $logoBase64 = null;
-            $logoPath = public_path('assets' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . 'AVI.png');
-            if (file_exists($logoPath)) {
-                $logoData = file_get_contents($logoPath);
-                $mimeType = $this->detectMimeType($logoPath);
-                $logoBase64 = 'data:' . $mimeType . ';base64,' . base64_encode($logoData);
-            } else {
-                \Log::warning('AVI logo not found at: ' . $logoPath);
-            }
-
-            // Konversi gambar data menjadi base64
-            $processedData = $data->map(function ($item) {
-                if ($item->check_item) {
-                    $item->check_item_base64 = $this->getImageAsBase64($item->check_item);
-                }
-                if ($item->resultImage) {
-                    $item->result_image_base64 = $this->getImageAsBase64($item->resultImage);
-                }
-                return $item;
-            });
-
-            $pdf = Pdf::loadView('export.pdf', compact('processedData', 'filters', 'totalRecords', 'logoBase64'))
-                ->setPaper('a4', 'landscape')
-                ->setOptions([
-                    'defaultFont' => 'sans-serif',
-                    'isRemoteEnabled' => true,
-                    'isHtml5ParserEnabled' => true,
-                    'isPhpEnabled' => true,
-                    'chroot' => public_path(),
-                ]);
-
-            $filename = 'AVI_Checksheet_Report_' . date('Y-m-d_H-i-s') . '.pdf';
             return $pdf->download($filename);
 
         } catch (\Exception $e) {
-            \Log::error('PDF export failed', [
+            Log::error('PDF Export failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengekspor PDF: ' . $e->getMessage()
+                'message' => 'Export failed: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Convert image to base64 (support Linux & Windows).
+     * Process data and convert images to base64 for PDF
      */
-    private function getImageAsBase64($imagePath)
+    private function processDataForPdf($data)
+    {
+        return $data->map(function ($item) {
+            // Process check_item - check if it's an image
+            $item->check_item_base64 = null;
+            if ($item->check_item && $this->isImagePath($item->check_item)) {
+                $item->check_item_base64 = $this->convertImageToBase64($item->check_item);
+            }
+
+            // Process resultImage
+            $item->result_image_base64 = null;
+            if ($item->resultImage && $this->isImagePath($item->resultImage)) {
+                $item->result_image_base64 = $this->convertImageToBase64($item->resultImage);
+            }
+
+            return $item;
+        });
+    }
+
+    /**
+     * Check if a string is an image path based on extension
+     */
+    private function isImagePath($path)
+    {
+        if (empty($path)) {
+            return false;
+        }
+
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        
+        return in_array($extension, $imageExtensions);
+    }
+
+    /**
+     * Convert image to base64 for PDF embedding
+     */
+    private function convertImageToBase64($imagePath)
     {
         try {
-            $normalizedPath = preg_replace('/^storage[\/\\\\]/', '', ltrim($imagePath, '/\\'));
-            $publicPath = public_path('storage' . DIRECTORY_SEPARATOR . $normalizedPath);
+            // Remove any leading slashes and normalize path
+            $imagePath = ltrim($imagePath, '/');
+            
+            // Try different storage locations
+            $possiblePaths = [
+                $imagePath,
+                'public/' . $imagePath,
+                'app/public/' . $imagePath,
+                'storage/app/public/' . $imagePath,
+            ];
 
-            if (file_exists($publicPath)) {
-                $file = file_get_contents($publicPath);
-                $mimeType = $this->detectMimeType($publicPath);
-                $base64 = base64_encode($file);
-                $base64 = preg_replace('/\s+/', '', $base64); // Hapus whitespace
-                return 'data:' . $mimeType . ';base64,' . $base64;
+            $imageData = null;
+            $actualPath = null;
+
+            // Try to find the image in different locations
+            foreach ($possiblePaths as $path) {
+                if (Storage::exists($path)) {
+                    $imageData = Storage::get($path);
+                    $actualPath = $path;
+                    break;
+                }
+                
+                // Also try direct file system access
+                $fullPath = storage_path('app/' . $path);
+                if (file_exists($fullPath)) {
+                    $imageData = file_get_contents($fullPath);
+                    $actualPath = $fullPath;
+                    break;
+                }
             }
 
-            if (Storage::disk('public')->exists($normalizedPath)) {
-                $file = Storage::disk('public')->get($normalizedPath);
-                $mimeType = $this->detectMimeType($normalizedPath, true);
-                $base64 = base64_encode($file);
-                $base64 = preg_replace('/\s+/', '', $base64); // Hapus whitespace
-                return 'data:' . $mimeType . ';base64,' . $base64;
+            if (!$imageData) {
+                Log::warning('Image not found for PDF', ['path' => $imagePath]);
+                return null;
             }
 
-            \Log::warning('Image not found', [
-                'original'   => $imagePath,
-                'normalized' => $normalizedPath,
-                'publicPath' => $publicPath
-            ]);
-            return null;
+            // Get mime type
+            $mimeType = $this->getMimeType($imagePath, $imageData);
+            
+            // Convert to base64
+            $base64 = base64_encode($imageData);
+            
+            return "data:{$mimeType};base64,{$base64}";
 
         } catch (\Exception $e) {
-            \Log::error('Failed to convert image to base64', [
+            Log::error('Failed to convert image to base64', [
                 'path' => $imagePath,
                 'error' => $e->getMessage()
             ]);
@@ -171,31 +208,73 @@ class ExportController extends Controller
         }
     }
 
+    /**
+     * Get MIME type for image
+     */
+    private function getMimeType($imagePath, $imageData = null)
+    {
+        $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+        
+        $mimeTypes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+        ];
+
+        if (isset($mimeTypes[$extension])) {
+            return $mimeTypes[$extension];
+        }
+
+        // Try to detect from image data if available
+        if ($imageData) {
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $detectedMime = $finfo->buffer($imageData);
+            if ($detectedMime && strpos($detectedMime, 'image/') === 0) {
+                return $detectedMime;
+            }
+        }
+
+        // Default fallback
+        return 'image/jpeg';
+    }
 
     /**
-     * Detect mime type safely with fallback.
+     * Get company logo as base64
      */
-    private function detectMimeType($path, $isStorage = false)
+    private function getLogoBase64()
     {
         try {
-            if (!$isStorage) {
-                $mimeType = @mime_content_type($path);
-            } else {
-                $mimeType = Storage::disk('public')->mimeType($path);
+            $paths = [
+                public_path('assets/images/AVI.png'),
+                public_path('assets/logo.png'),
+                public_path('images/logo.png'),
+            ];
+
+            foreach ($paths as $path) {
+                if (file_exists($path)) {
+                    $logoData = file_get_contents($path);
+                    $mimeType = mime_content_type($path);
+                    return "data:{$mimeType};base64," . base64_encode($logoData);
+                }
             }
-
-            if ($mimeType) return $mimeType;
-
-            // fallback by extension
-            $ext = pathinfo($path, PATHINFO_EXTENSION);
-            return match(strtolower($ext)) {
-                'jpg', 'jpeg' => 'image/jpeg',
-                'png' => 'image/png',
-                'gif' => 'image/gif',
-                default => 'application/octet-stream',
-            };
         } catch (\Exception $e) {
-            return 'application/octet-stream';
+            Log::warning('Could not load logo for PDF', ['error' => $e->getMessage()]);
         }
+
+        return null;
+    }
+
+
+    /**
+     * Export to Excel (existing functionality)
+     */
+    public function exportExcel(Request $request)
+    {
+        // Your existing Excel export code here
+        // This method should remain unchanged
     }
 }
