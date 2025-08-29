@@ -192,8 +192,8 @@
 
 
     <script>
-    let qualityValues = {}; // Store selected quality values for each item
-    let validatedItems = new Set(); // Track validated items
+    let qualityValues = {};
+    let validatedItems = new Set(); 
 
     function updateQualityStatus(itemId) {
         const select = document.getElementById(`quality-select-${itemId}`);
@@ -239,7 +239,6 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Validating...
         `;
 
         // Prepare form data
@@ -329,7 +328,7 @@
         }, 3000);
     }
 
-    // --- Image Detail Modal Functions ---
+    // Image Detail Modal Functions
     const imageDetailModal = document.getElementById('imageDetailModal');
     const modalImage = document.getElementById('modalImage');
     const modalContent = document.getElementById('modalContent');
@@ -338,7 +337,7 @@
         modalImage.src = imageUrl;
         imageDetailModal.classList.remove('hidden');
 
-        // animasi muncul
+        // animasi start
         setTimeout(() => {
             modalContent.classList.remove('scale-95', 'opacity-0');
             modalContent.classList.add('scale-100', 'opacity-100');
@@ -346,17 +345,17 @@
     }
 
     function closeImageModal() {
-        // animasi keluar
+        // animasi end
         modalContent.classList.remove('scale-100', 'opacity-100');
         modalContent.classList.add('scale-95', 'opacity-0');
 
         setTimeout(() => {
             imageDetailModal.classList.add('hidden');
-            modalImage.src = ''; // Clear image source
+            modalImage.src = '';
         }, 200);
     }
 
-    // tutup modal saat klik di luar konten
+    // close modal when click in the outside modal
     imageDetailModal.addEventListener('click', (e) => {
         if (e.target === imageDetailModal) {
             closeImageModal();
