@@ -107,8 +107,6 @@
         text-align: center;
     }
 
-
-
     .no-data {
         text-align: center;
         padding: 30px;
@@ -116,12 +114,21 @@
         font-style: italic;
     }
 
+    .image-cell {
+        text-align: left;
+        vertical-align: middle;
+    }
+
     .image-cell img {
         max-width: 80px;
         height: auto;
-        display: block;
-        margin: 0 auto;
+        display: inline-block;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%); 
     }
+
+
     </style>
 </head>
 
