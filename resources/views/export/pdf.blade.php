@@ -102,9 +102,12 @@
         text-align: center;
     }
 
+
     .text-center {
         text-align: center;
     }
+
+
 
     .no-data {
         text-align: center;
@@ -113,42 +116,11 @@
         font-style: italic;
     }
 
-    .image-cell {
-        text-align: center;
-        vertical-align: middle;
-        max-width: 100px;
-    }
-
     .image-cell img {
         max-width: 80px;
-        max-height: 60px;
-        width: auto;
         height: auto;
         display: block;
         margin: 0 auto;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-    }
-
-    .status-ok {
-        color: #22c55e;
-        font-weight: bold;
-    }
-
-    .status-ng {
-        color: #ef4444;
-        font-weight: bold;
-    }
-
-    .status-pending {
-        color: #f59e0b;
-        font-weight: bold;
-    }
-
-    .summary {
-        margin-bottom: 10px;
-        font-weight: bold;
-        font-size: 11px;
     }
     </style>
 </head>
@@ -193,6 +165,7 @@
             <td>
                 {{ $processedData->first()->log->partModelRelation->frontView ?? $filters['model'] ?? '-' }}
             </td>
+
         </tr>
     </table>
 
@@ -206,15 +179,15 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 10%;">Station</th>
-                <th style="width: 15%;">Check Item</th>
-                <th style="width: 15%;">Standard</th>
-                <th style="width: 15%;">Result Image</th>
-                <th style="width: 8%;">Prod Status</th>
-                <th style="width: 12%;">Prod Checked By</th>
-                <th style="width: 8%;">Quality Status</th>
-                <th style="width: 12%;">Quality Checked By</th>
+                <th>No</th>
+                <th>Station</th>
+                <th>Check Item</th>
+                <th>Standard</th>
+                <th>Result Image</th>
+                <th>Prod Status</th>
+                <th>Prod Checked By</th>
+                <th>Quality Status</th>
+                <th>Quality Checked By</th>
             </tr>
         </thead>
         <tbody>
@@ -226,9 +199,9 @@
                 {{-- Check Item (image or text) --}}
                 <td class="image-cell">
                     @if($item->check_item_base64)
-                        <img src="{{ $item->check_item_base64 }}" alt="Check Item" title="{{ $item->check_item }}">
+                    <img src="{{ $item->check_item_base64 }}" alt="Check Item">
                     @else
-                        {{ $item->check_item ?: '-' }}
+                    {{ $item->check_item ?: '-' }}
                     @endif
                 </td>
 
@@ -237,20 +210,20 @@
                 {{-- Result Image --}}
                 <td class="image-cell">
                     @if($item->result_image_base64)
-                        <img src="{{ $item->result_image_base64 }}" alt="Result Image" title="{{ $item->resultImage }}">
+                    <img src="{{ $item->result_image_base64 }}" alt="Result">
                     @else
-                        {{ $item->resultImage ? 'No Preview' : '-' }}
+                    -
                     @endif
                 </td>
 
                 {{-- Prod Status --}}
                 <td class="text-center">
                     @if($item->prod_status === 'OK')
-                        <span class="status-ok">OK</span>
+                    <span>OK</span>
                     @elseif($item->prod_status === 'NG')
-                        <span class="status-ng">NG</span>
+                    <span>NG</span>
                     @else
-                        -
+                    -
                     @endif
                 </td>
 
@@ -259,11 +232,11 @@
                 {{-- Quality Status --}}
                 <td class="text-center">
                     @if($item->quality_status === 'OK')
-                        <span class="status-ok">OK</span>
+                    <span>OK</span>
                     @elseif($item->quality_status === 'NG')
-                        <span class="status-ng">NG</span>
+                    <span>NG</span>
                     @else
-                        <span class="status-pending">Pending</span>
+                    <span>Pending</span>
                     @endif
                 </td>
 

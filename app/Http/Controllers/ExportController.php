@@ -15,7 +15,6 @@ class ExportController extends Controller
 {
     public function index()
     {
-        // Get unique values for filters
         $areas = LogCs::distinct()->pluck('area')->filter()->sort()->values();
         $lines = LogCs::distinct()->pluck('line')->filter()->sort()->values();
         $models = PartModel::pluck('frontView', 'Model')->toArray();
@@ -33,10 +32,8 @@ class ExportController extends Controller
         try {
             Log::info('PDF Export started with filters', $request->all());
 
-            // Build query with filters
             $query = LogDetailCs::with(['log.partModelRelation']);
 
-            // Apply filters
             if ($request->filled('area')) {
                 $query->whereHas('log', function ($q) use ($request) {
                     $q->where('area', $request->area);
@@ -73,12 +70,8 @@ class ExportController extends Controller
                 return response()->json(['message' => 'No data found'], 404);
             }
 
-            // Process data and convert images to base64
             $processedData = $this->processDataForPdf($data);
-
-            // Get logo as base64
             $logoBase64 = $this->getLogoBase64();
-
             $filters = $request->only(['date', 'shift', 'area', 'line', 'model']);
 
             $pdf = Pdf::loadView('export.pdf', [
@@ -88,7 +81,7 @@ class ExportController extends Controller
                 'logoBase64' => $logoBase64,
             ]);
 
-            $pdf->setPaper('A4', 'landscape');
+            $pdf->setPaper('A4', 'portrait');
             $pdf->setOptions([
                 'isHtml5ParserEnabled' => true,
                 'isPhpEnabled' => true,
@@ -112,19 +105,14 @@ class ExportController extends Controller
         }
     }
 
-    /**
-     * Process data and convert images to base64 for PDF
-     */
     private function processDataForPdf($data)
     {
         return $data->map(function ($item) {
-            // Process check_item - check if it's an image
             $item->check_item_base64 = null;
             if ($item->check_item && $this->isImagePath($item->check_item)) {
                 $item->check_item_base64 = $this->convertImageToBase64($item->check_item);
             }
 
-            // Process resultImage
             $item->result_image_base64 = null;
             if ($item->resultImage && $this->isImagePath($item->resultImage)) {
                 $item->result_image_base64 = $this->convertImageToBase64($item->resultImage);
@@ -134,9 +122,6 @@ class ExportController extends Controller
         });
     }
 
-    /**
-     * Check if a string is an image path based on extension
-     */
     private function isImagePath($path)
     {
         if (empty($path)) {
@@ -149,17 +134,13 @@ class ExportController extends Controller
         return in_array($extension, $imageExtensions);
     }
 
-    /**
-     * Convert image to base64 for PDF embedding
-     */
     private function convertImageToBase64($imagePath)
     {
         try {
-            // Remove any leading slashes and normalize path
             $imagePath = ltrim($imagePath, '/');
             
-            // Try different storage locations
             $possiblePaths = [
+                'public/storage/.' . $imagePath,
                 $imagePath,
                 'public/' . $imagePath,
                 'app/public/' . $imagePath,
@@ -169,7 +150,6 @@ class ExportController extends Controller
             $imageData = null;
             $actualPath = null;
 
-            // Try to find the image in different locations
             foreach ($possiblePaths as $path) {
                 if (Storage::exists($path)) {
                     $imageData = Storage::get($path);
@@ -177,7 +157,6 @@ class ExportController extends Controller
                     break;
                 }
                 
-                // Also try direct file system access
                 $fullPath = storage_path('app/' . $path);
                 if (file_exists($fullPath)) {
                     $imageData = file_get_contents($fullPath);
@@ -191,10 +170,7 @@ class ExportController extends Controller
                 return null;
             }
 
-            // Get mime type
             $mimeType = $this->getMimeType($imagePath, $imageData);
-            
-            // Convert to base64
             $base64 = base64_encode($imageData);
             
             return "data:{$mimeType};base64,{$base64}";
@@ -208,9 +184,6 @@ class ExportController extends Controller
         }
     }
 
-    /**
-     * Get MIME type for image
-     */
     private function getMimeType($imagePath, $imageData = null)
     {
         $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
@@ -229,7 +202,6 @@ class ExportController extends Controller
             return $mimeTypes[$extension];
         }
 
-        // Try to detect from image data if available
         if ($imageData) {
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $detectedMime = $finfo->buffer($imageData);
@@ -238,13 +210,9 @@ class ExportController extends Controller
             }
         }
 
-        // Default fallback
         return 'image/jpeg';
     }
 
-    /**
-     * Get company logo as base64
-     */
     private function getLogoBase64()
     {
         try {
@@ -268,13 +236,8 @@ class ExportController extends Controller
         return null;
     }
 
-
-    /**
-     * Export to Excel (existing functionality)
-     */
     public function exportExcel(Request $request)
     {
-        // Your existing Excel export code here
-        // This method should remain unchanged
+        // no code:(
     }
 }
